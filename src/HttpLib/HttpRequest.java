@@ -1,22 +1,21 @@
 package HttpLib;
 
-import HttpLib.Exceptions.HttpFormatException;
 import java.net.URL;
 
 public class HttpRequest {
 
     // TODO: Create URL class -> Using Java.net.URL instead -> ON HOLD
 
-    URL url;
+    HttpMessageUrl url;
     HttpRequestMethod requestMethod;
-    HttpMessageHeader messageHeader = new HttpMessageHeader();
-    HttpRequestBody body = new HttpRequestBody("");
+    HttpMessageHeader messageHeader;
+    HttpRequestBody body;
 
     // TODO: IsValid method
     // TODO: Getters
 
     public HttpRequest(URL url, HttpRequestMethod requestMethod, HttpMessageHeader messageHeader, HttpRequestBody body) {
-        this.url = url;
+        this.url = new HttpMessageUrl(url);
         this.requestMethod = requestMethod;
         this.messageHeader = messageHeader;
         this.body = body;
@@ -24,7 +23,7 @@ public class HttpRequest {
 
 
     public String toString() {
-        String request = requestMethod.toString() + " " + url.getFile() + "?" + url.getQuery() + " " + "HTTP/1.0\r\n"
+        String request = requestMethod.toString() + url.getFileAndQuery() + "HTTP/1.0\r\n"
                         + messageHeader.toString()
                         + body.getLengthString()
                         + "\r\n"
@@ -33,7 +32,13 @@ public class HttpRequest {
     }
 
     public boolean isValid(){
-        // TODO: all composite objects should be valid
+        //TODO: other validation?
+        if (requestMethod.equals(HttpRequestMethod.POST)) {
+            return body != null;
+        }
+        // Headers have pre-check and do not require another check prior to sending
+        // Url has pre-check and does not require another check prior to sending
+
         return true;
     }
 
