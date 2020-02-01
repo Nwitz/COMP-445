@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// TODO: toString to output entire header block well formatted
-
 public class HttpMessageHeader {
 
     private HashMap<String, String> _entries = new HashMap<>();
@@ -33,6 +31,13 @@ public class HttpMessageHeader {
 
     public HashMap<String, String> GetEntries() {
         return _entries;
+    }
+
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        _entries.forEach((key, value) -> stringBuilder.append(key).append(": ").append(value).append("\r\n"));
+
+        return stringBuilder.toString();
     }
 
 }
