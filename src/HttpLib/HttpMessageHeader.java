@@ -21,7 +21,7 @@ public class HttpMessageHeader {
 
             _entries.put(key, regMatcher.group(1));
         }else {
-            throw new HttpFormatException();
+            throw new HttpFormatException("Header entry not well formatted.");
         }
     }
 
