@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// TODO: toString to output entire header block well formatted
 
-class MessageHeader {
+public class HttpMessageHeader {
 
     private HashMap<String, String> _entries = new HashMap<>();
 

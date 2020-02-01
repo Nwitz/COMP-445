@@ -1,5 +1,7 @@
 package HttpLib;
 
+// TODO: Move to httpc app level
+
 public enum HttpFlag {
     HEADER("-h"),
     INLINE_DATA("-d"),

@@ -2,14 +2,19 @@ package HttpLib;
 
 public class HttpRequestHandler {
 
-    private HttpRequest _request;
+    // TODO: Handle sockets creation and maintenance
 
-    public HttpRequestHandler(HttpRequest request) {
-        _request = request;
-    }
+    public HttpRequestHandler() { }
 
-    public HttpResponse Send(){
-        // Send, wait for answer and return response
+    public HttpResponse Send(HttpRequest request){
+        // Open Socket
+        // Send request
+        // Wait for answer
+        // Close socket
+        // return response
         return new HttpResponse();
     }
+
+    // For Asg2:
+    // public void Listen(Port port, Function<HttpRequest> callback){}
 }

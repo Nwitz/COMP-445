@@ -1,6 +1,6 @@
 package HttpLib;
 
-public class RequestMethod {
+public class HttpRequestMethod {
 
     private boolean requiresBody;
     private String requestMethodString;

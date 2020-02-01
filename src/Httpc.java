@@ -1,5 +1,10 @@
 public class Httpc {
 
+    // TODO: Handle get|post command (2 different method maybe?)
+    // TODO: FileReader -> to body
+    // TODO: Inline-Data -> body
+    // TODO: Check for application argument library
+
     public void parseArgs(String args[]) {
         RequestData requestData = new RequestData();
         requestData.method = args[0];
