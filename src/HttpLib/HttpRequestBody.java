@@ -18,8 +18,8 @@ public class HttpRequestBody {
         return body;
     }
 
-    public int getLength() {
-        return length;
+    public String getLengthString() {
+        return "Content-Length: " + body.length() + "\r\n";
     }
 
 }

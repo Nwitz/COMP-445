@@ -21,7 +21,7 @@ public class HttpRequestHandler {
             throw new InvalidRequestException();
 
         // Open Socket
-        InetAddress addressIp = InetAddress.getByName(request.url);
+        InetAddress addressIp = InetAddress.getByName(request.url.getHost());
         Socket socket = new Socket(addressIp, PORT);
 
         PrintWriter out = new PrintWriter(socket.getOutputStream());
