@@ -1,5 +1,7 @@
 package HttpLib;
 
+import HttpLib.Exceptions.HttpFormatException;
+
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,7 +12,7 @@ public class HttpMessageHeader {
 
     private HashMap<String, String> _entries = new HashMap<>();
 
-    void ParseLine(String headerLine) throws HttpFormatException {
+    public void parseLine(String headerLine) throws HttpFormatException {
         Pattern headerReg = Pattern.compile("(\\w+)\\s*:\\s*(\\w+)");
         Matcher regMatcher = headerReg.matcher(headerLine);
 
@@ -21,7 +23,7 @@ public class HttpMessageHeader {
 
             _entries.put(key, regMatcher.group(1));
         }else {
-            throw new HttpFormatException("Header entry not well formatted.");
+            throw new HttpFormatException();
         }
     }
 
