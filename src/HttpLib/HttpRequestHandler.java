@@ -28,7 +28,7 @@ public class HttpRequestHandler {
         InputStream in = socket.getInputStream();
 
         // Send request
-        out.write(request.url);
+        out.write(request.toString());
         out.flush();
 
         // Read entire answer
