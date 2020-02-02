@@ -4,32 +4,32 @@ import HttpLib.Exceptions.HttpFormatException;
 
 public class HttpResponse {
 
-    HttpStatusCode _status;
-    HttpRequestMethod method;
-    HttpMessageHeader header;
-    HttpRequestBody body;
+    String version;
+    String phrase = "";
+    HttpStatusCode statusCode;
+    HttpMessageHeader header = new HttpMessageHeader();
+    HttpRequestBody body = new HttpRequestBody();
 
-    private String _original;
+    public HttpResponse(){ }
 
     public HttpResponse(String responseString) throws HttpFormatException {
-        this._original = responseString;
-
         // Divide body from entire response
-        String[] resParts = responseString.split("[\\r\\n]{2}");
+        String[] resParts = responseString.split("(\\r\\n){2}");
 
         if(resParts.length < 2)
             throw new HttpFormatException("Http response not well formatted.");
 
-        String[] beforeBody = resParts[0].split("[\\r\\n]+");
+        String[] beforeBody = resParts[0].split("(\\r\\n)+");
 
         // Handle statusline
         String[] statusLine = beforeBody[0].trim().split("\\s+");
-        if(statusLine.length != 3)
+        if(statusLine.length < 2 || statusLine.length > 3)
             throw new HttpFormatException("Http response not well formatted.");
 
-        // TODO: Store version & Phrase string
-        // TODO: Convert string to Enum method
-        // method = HttpRequestMethod.GET;
+        version = statusLine[0];
+        statusCode = HttpStatusCode.get(Integer.parseInt(statusLine[1].trim()));
+        if(statusLine.length == 3)
+            phrase = statusLine[2];
 
         // Create header
         for(int i=1; i<beforeBody.length; i++)
@@ -43,9 +43,16 @@ public class HttpResponse {
         body = new HttpRequestBody(bodyBuilder.toString());
     }
 
+    public boolean isValid(){
+        return (statusCode != null && phrase != null && header.isValid());
+    }
+
     @Override
     public String toString() {
-        // TODO: Send reconstructed from composite objects (Method, status, body..)
-        return _original;
+        String rn = "\r\n";
+
+        return version + " " + (statusCode!=null?statusCode.getValue()+" ":"") + phrase + rn
+                + header.toString() + rn
+                + body;
     }
 }

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidRequestException;
 
 import java.net.InetAddress;
@@ -28,7 +29,7 @@ public class HttpRequestHandler {
         InputStream in = socket.getInputStream();
 
         // Send request
-        out.write(request.toString());
+        out.write("GET /get?key=value HTTP/1.0 \r\n\r\n"); // request.toString()
         out.flush();
 
         // Read entire answer
@@ -43,7 +44,12 @@ public class HttpRequestHandler {
         in.close();
         socket.close();
 
-        return new HttpResponse(res.toString());
+        try {
+            return new HttpResponse(res.toString());
+        } catch (HttpFormatException e) {
+            // Invalid response format received, sending invalid empty reponse
+            return new HttpResponse();
+        }
     }
 
     // For Asg2:
