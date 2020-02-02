@@ -1,20 +1,23 @@
 package HttpLib;
 
-import HttpLib.Exceptions.HttpFormatException;
+import HttpLib.Exceptions.InvalidRequestException;
+
+import java.net.URL;
 
 public class HttpRequest {
 
-    // TODO: Create URL class
-    String url;
+    // TODO: Create URL class -> Using Java.net.URL instead -> ON HOLD
+
+    HttpMessageUrl url;
     HttpRequestMethod requestMethod;
-    HttpMessageHeader messageHeader = new HttpMessageHeader();
-    HttpRequestBody body = new HttpRequestBody("");
+    HttpMessageHeader messageHeader;
+    HttpRequestBody body;
 
     // TODO: IsValid method
     // TODO: Getters
 
-    public HttpRequest(String url, HttpRequestMethod requestMethod, HttpMessageHeader messageHeader, HttpRequestBody body) {
-        this.url = url;
+    public HttpRequest(URL url, HttpRequestMethod requestMethod, HttpMessageHeader messageHeader, HttpRequestBody body) {
+        this.url = new HttpMessageUrl(url);
         this.requestMethod = requestMethod;
         this.messageHeader = messageHeader;
         this.body = body;
@@ -22,18 +25,30 @@ public class HttpRequest {
 
 
     public String toString() {
-        // TODO: todo
-        return "";
+        String request = requestMethod.toString() + url.getFileAndQuery() + "HTTP/1.0\r\n"
+                        + messageHeader.toString()
+                        + body.getLengthString()
+                        + "\r\n"
+                        + body;
+        return request;
     }
 
-    public boolean isValid(){
-        // TODO: all composite objects should be valid
+    public boolean isValid() {
+        if(requestMethod == null) {
+            return false;
+        }
+        if (requestMethod.equals(HttpRequestMethod.POST)) {
+            return body.isValid();
+        }
+        if (!messageHeader.isValid()) {
+            return false;
+        }
         return true;
     }
 
-//    public Byte[] toBytes(){
-//
-//    }
+    public byte[] toBytes(){
+        return this.toString().getBytes();
+    }
 
 
 }

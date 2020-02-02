@@ -25,7 +25,7 @@ public class HttpMessageHeader {
         }
     }
 
-    public boolean IsValid(){
+    public boolean isValid(){
         // Check for required header field presence (version > 1.0 only)
         // Note: Not required for this assignment.
         return true;
