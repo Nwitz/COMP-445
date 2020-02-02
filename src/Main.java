@@ -7,9 +7,9 @@ import java.net.URL;
 
 
 public class Main {
-    public static void main(String args[]) throws HttpFormatException, InvalidRequestException, IOException {
+    public static void main(String args[]) throws Exception {
 
-        URL url = new URL("http://postman-echo.com/get?key1=value1");
+        URL url = new URL("http://www.httpbin.org");
         HttpRequest request = new HttpRequest(
                 url,
                 HttpRequestMethod.GET,

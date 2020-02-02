@@ -25,13 +25,17 @@ public class HttpResponse {
 
         // Handle statusline
         String[] statusLine = beforeBody[0].trim().split("\\s+");
-        if (statusLine.length < 2 || statusLine.length > 3)
+        if (statusLine.length < 2)
             throw new InvalidResponseException("Http response not well formatted.");
 
         version = statusLine[0];
         statusCode = HttpStatusCode.get(Integer.parseInt(statusLine[1].trim()));
-        if (statusLine.length == 3)
-            phrase = statusLine[2];
+        if (statusLine.length > 3){
+            StringBuilder sb = new StringBuilder();
+            for(int i=2; i<statusLine.length; i++)
+                sb.append(statusLine[i]).append(" ");
+            phrase = sb.toString().trim();
+        }
 
         // Create header
         try {
