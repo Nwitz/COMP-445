@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidRequestException;
+import HttpLib.Exceptions.InvalidResponseException;
 
 import java.net.InetAddress;
 
@@ -16,7 +18,7 @@ public class HttpRequestHandler {
     public HttpRequestHandler() {
     }
 
-    public HttpResponse send(HttpRequest request) throws InvalidRequestException, IOException {
+    public HttpResponse send(HttpRequest request) throws InvalidRequestException, InvalidResponseException, IOException {
         if (!request.isValid())
             throw new InvalidRequestException();
 

@@ -11,17 +11,17 @@ public class HttpMessageHeader {
     private HashMap<String, String> _entries = new HashMap<>();
 
     public void parseLine(String headerLine) throws HttpFormatException {
-        Pattern headerReg = Pattern.compile("(\\w+)\\s*:\\s*(\\w+)");
+        Pattern headerReg = Pattern.compile("([\\w-]+)\\s*:\\s*(.+)");
         Matcher regMatcher = headerReg.matcher(headerLine);
 
         if (regMatcher.find()) {
-            String key = regMatcher.group(0);
+            String key = regMatcher.group(1);
             if(!_entries.containsKey(key))
                 _entries.remove(key);
 
-            _entries.put(key, regMatcher.group(1));
+            _entries.put(key, regMatcher.group(2));
         }else {
-            throw new HttpFormatException();
+            throw new HttpFormatException("Header entry not well formatted.");
         }
     }
 
