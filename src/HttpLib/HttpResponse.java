@@ -4,7 +4,7 @@ import HttpLib.Exceptions.HttpFormatException;
 
 public class HttpResponse {
 
-    String version;
+    String version = "HTTP/1.0";
     String phrase = "";
     HttpStatusCode statusCode;
     HttpMessageHeader header = new HttpMessageHeader();
