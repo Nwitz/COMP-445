@@ -7,6 +7,7 @@ import java.net.Socket;
 
 import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidRequestException;
+import HttpLib.Exceptions.InvalidResponseException;
 
 import java.net.InetAddress;
 
@@ -17,7 +18,7 @@ public class HttpRequestHandler {
     public HttpRequestHandler() {
     }
 
-    public HttpResponse send(HttpRequest request) throws InvalidRequestException, IOException {
+    public HttpResponse send(HttpRequest request) throws InvalidRequestException, InvalidResponseException, IOException {
         if (!request.isValid())
             throw new InvalidRequestException();
 
@@ -44,12 +45,7 @@ public class HttpRequestHandler {
         in.close();
         socket.close();
 
-        try {
-            return new HttpResponse(res.toString());
-        } catch (HttpFormatException e) {
-            // Invalid response format received, sending invalid empty reponse
-            return new HttpResponse();
-        }
+        return new HttpResponse(res.toString());
     }
 
     // For Asg2:
