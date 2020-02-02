@@ -1,5 +1,7 @@
 package HttpLib;
 
+import HttpLib.Exceptions.InvalidRequestException;
+
 import java.net.URL;
 
 public class HttpRequest {
@@ -31,13 +33,16 @@ public class HttpRequest {
         return request;
     }
 
-    public boolean isValid(){
-        //TODO: other validation?
-        if (requestMethod.equals(HttpRequestMethod.POST)) {
-            return body != null;
+    public boolean isValid() throws InvalidRequestException{
+        if(requestMethod == null) {
+            throw new InvalidRequestException("Http method required");
         }
-        // Headers have pre-check and do not require another check prior to sending
-        // Url has pre-check and does not require another check prior to sending
+        if (requestMethod.equals(HttpRequestMethod.POST)) {
+            throw new InvalidRequestException("POST method requires body");
+        }
+        if (!messageHeader.isValid()) {
+            throw new InvalidRequestException("Headers are invalid");
+        }
 
         return true;
     }

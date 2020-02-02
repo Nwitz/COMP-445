@@ -22,4 +22,7 @@ public class HttpRequestBody {
         return "Content-Length: " + body.length() + "\r\n";
     }
 
+    public boolean isValid() {
+        return body.length() > 0;
+    }
 }
