@@ -35,15 +35,14 @@ public class HttpRequest {
 
     public boolean isValid() throws InvalidRequestException{
         if(requestMethod == null) {
-            throw new InvalidRequestException("Http method required");
+            return false;
         }
         if (requestMethod.equals(HttpRequestMethod.POST)) {
-            throw new InvalidRequestException("POST method requires body");
+            return body.isValid();
         }
         if (!messageHeader.isValid()) {
-            throw new InvalidRequestException("Headers are invalid");
+            return false;
         }
-
         return true;
     }
 
