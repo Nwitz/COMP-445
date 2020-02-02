@@ -1,3 +1,4 @@
+import HttpLib.*;
 import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.*;
@@ -8,17 +9,15 @@ import java.net.URL;
 
 
 public class Main {
-    public static void main(String[] args) throws HttpFormatException, InvalidRequestException, IOException {
+    public static void main(String args[]) throws Exception {
 
-
-//        String post = "POST";
-//        HttpRequestMethod method = HttpRequestMethod.valueOf(post);
-//
-//        String garbageString = "garbage";
-//        HttpRequestMethod garbage = HttpRequestMethod.valueOf(garbageString);
-//
-//        System.out.println(method);
-//        System.out.println(garbage);
+        URL url = new URL("http://www.httpbin.org");
+        HttpRequest request = new HttpRequest(
+                url,
+                HttpRequestMethod.GET,
+                new HttpMessageHeader(),
+                new HttpRequestBody("")
+        );
 
 
         System.out.println(args[0]);
