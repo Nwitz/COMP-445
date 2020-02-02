@@ -33,7 +33,7 @@ public class HttpRequest {
         return request;
     }
 
-    public boolean isValid() throws InvalidRequestException{
+    public boolean isValid() {
         if(requestMethod == null) {
             return false;
         }
