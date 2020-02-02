@@ -29,7 +29,7 @@ public class HttpRequestHandler {
         InputStream in = socket.getInputStream();
 
         // Send request
-        out.write("GET /get?key=value HTTP/1.0 \r\n\r\n"); // request.toString()
+        out.write(request.toString());
         out.flush();
 
         // Read entire answer
