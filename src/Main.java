@@ -21,9 +21,13 @@ public class Main {
 //        System.out.println(garbage);
 
 
-        String[] testArray = {"POST", "-h", "key1:value1", "-h", "key2:value2", "-d", "{String: Hello how's it going?}", "http://postman-echo.com/post?key1=value1"};
+        System.out.println(args[0]);
+        if (args.length == 0) {
+            args = new String[]{"POST", "-h", "key1:value1", "-h", "key2:value2", "-d", "{String: Hello how's it going?}", "http://postman-echo.com/post?key1=vaelue1"};
+        }
         Httpc httpc = new Httpc();
-        httpc.parseArgs(testArray);
+        httpc.parseArgs(args);
+
 
 
 //        URL url = new URL("http://postman-echo.com/get?key1=value1");
