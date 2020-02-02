@@ -1,6 +1,9 @@
 package HttpLib;
 
-
+/**
+ * A glorified string wrapper for the HTTP message body.
+ * Counts message length
+ */
 public class HttpRequestBody {
 
     int length = 0;

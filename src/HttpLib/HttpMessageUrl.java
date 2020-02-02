@@ -3,6 +3,9 @@ package HttpLib;
 import java.net.URL;
 import java.util.HashMap;
 
+/**
+ * A java.net.URL wrapper to allow for query arguments parsing and others.
+ */
 public class HttpMessageUrl {
     private URL _url;
     private HashMap<String, String> _queries = new HashMap<>();

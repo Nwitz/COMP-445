@@ -1,9 +1,10 @@
 package HttpLib;
-
-import HttpLib.Exceptions.InvalidRequestException;
-
 import java.net.URL;
 
+/**
+ * The entire request object that can be either send and received.
+ * Can check for its own validity.
+ */
 public class HttpRequest {
 
     HttpMessageUrl url;

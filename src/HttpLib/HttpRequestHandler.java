@@ -5,12 +5,15 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.Exceptions.InvalidResponseException;
 
 import java.net.InetAddress;
 
+/**
+ * Handler to ease sending and receiving HTTP Requests & Responses.
+ * It uses a TCP Socket for data transportation.
+ */
 public class HttpRequestHandler {
 
     private final int PORT = 80;
@@ -18,6 +21,14 @@ public class HttpRequestHandler {
     public HttpRequestHandler() {
     }
 
+    /**
+     * Given a valid HTTPRequest, it sends the requests and build a HTTPResponse out of the received data.
+     * @param request
+     * @return
+     * @throws InvalidRequestException
+     * @throws InvalidResponseException
+     * @throws IOException
+     */
     public HttpResponse send(HttpRequest request) throws InvalidRequestException, InvalidResponseException, IOException {
         if (!request.isValid())
             throw new InvalidRequestException();
