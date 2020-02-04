@@ -8,11 +8,14 @@ public enum HttpStatusCode {
     BadRequest(400), Unauthorized(401), Forbidden(403), NotFound(404),
     InternalServerError(500);
 
-    private static final HashMap<Integer, HttpStatusCode> lookup = new HashMap<Integer, HttpStatusCode>();
+    private static final HashMap<Integer, HttpStatusCode> lookupCode = new HashMap<Integer, HttpStatusCode>();
+    private static final HashMap<String, HttpStatusCode> lookupName = new HashMap<String, HttpStatusCode>();
 
     static {
-        for (HttpStatusCode s : EnumSet.allOf(HttpStatusCode.class))
-            lookup.put(s.getValue(), s);
+        for (HttpStatusCode s : EnumSet.allOf(HttpStatusCode.class)){
+            lookupCode.put(s.getValue(), s);
+            lookupName.put(s.name().toUpperCase(), s);
+        }
     }
 
     private int _val;
@@ -26,6 +29,10 @@ public enum HttpStatusCode {
     }
 
     public static HttpStatusCode get(int code) {
-        return lookup.get(code);
+        return lookupCode.get(code);
+    }
+
+    public static HttpStatusCode get(String enumName) {
+        return lookupName.get(enumName.toUpperCase());
     }
 }
