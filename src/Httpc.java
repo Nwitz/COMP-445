@@ -10,7 +10,10 @@ public class Httpc {
     public static void main(String[] args) throws IOException, HttpFormatException, InvalidRequestException {
         if (args.length == 0) {
             // TODO: Print help simply in that case
-            args = new String[]{"test", "-h", "key1:value1", "-d", "{String: Hello how's it going?}", "-h", "key2:value2", "http://postman-echo.com/post?key1=vaelue1"};
+            args = new String[]{"post", "-h", "key1:value1", "-v", "-d",  "{String: Hello how's it going?}", "-h", "key2:value2", "http://postman-echo.com/post?key1=vaelue1"};
+//            args = new String[]{"help", "get"};
+//            args = new String[]{"help", "post"};
+//            args = new String[]{"help"};
         }
 
         // Strip arguments
@@ -28,7 +31,7 @@ public class Httpc {
                 new POSTCommand(commandArgs).run();
                 break;
             case "HELP":
-                // TODO
+                new HELPCommand(commandArgs).run();
                 break;
             default:
                 printHelpAndExit();

@@ -57,6 +57,10 @@ public class HttpResponse {
         return (statusCode != null && phrase != null && header.isValid());
     }
 
+    public String getBody() {
+        return body.toString();
+    }
+
     @Override
     public String toString() {
         String rn = "\r\n";

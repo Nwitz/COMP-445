@@ -1,6 +1,11 @@
 import argparser.ArgParser;
 import argparser.BooleanHolder;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public abstract class Command {
 
     protected final String[] args;
@@ -24,9 +29,20 @@ public abstract class Command {
         argParser.matchAllArgs(this.args, 0, ArgParser.EXIT_ON_ERROR);
     }
 
+    private void printToFile(String path, String response) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+        writer.write(response);
+        writer.close();
+    }
+
     public final void printHelpAndExit(){
         System.out.println(argParser.getHelpMessage());
         System.exit(0);
     }
 
+    public final void printHelpAndExit(String error){
+        System.out.println(error);
+        System.out.println(argParser.getHelpMessage());
+        System.exit(0);
+    }
 }
