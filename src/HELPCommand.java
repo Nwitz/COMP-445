@@ -5,7 +5,7 @@ public class HELPCommand extends Command {
     private BooleanHolder post;
 
     public HELPCommand(String[] args)  {
-        super("httpc help [post] [get]", args);
+        super("httpc command [arguments]", args);
     }
 
     public HELPCommand(String commandName, String[] args) {
@@ -18,8 +18,8 @@ public class HELPCommand extends Command {
         get = new BooleanHolder();
         post = new BooleanHolder();
 
-        argParser.addOption("get, GET %v # get help for the GET command", get);
-        argParser.addOption("post, POST %v # get help for the GET command", post);
+        argParser.addOption("get %v #get help for the GET command", get);
+        argParser.addOption("post %v #get help for the POST command", post);
     }
 
     @Override
@@ -28,21 +28,24 @@ public class HELPCommand extends Command {
 
         int helpCode = 0;
         if (post.value) {
-            helpCode+=1;
+            helpCode += 1;
         }
         if (get.value) {
-            helpCode+=2;
+            helpCode += 2;
         }
 
-        switch(helpCode) {
+        Command c;
+        switch (helpCode) {
             case 1:
-                System.out.println("help post");
+                c = new POSTCommand(args);
+                c.printHelpAndExit("Post executes a HTTP POST request for a given URL with inline data or from file.");
                 break;
             case 2:
-                System.out.println("help get");
+                c = new GETCommand(args);
+                c.printHelpAndExit("Get executes a HTTP GET request for a given URL.");
                 break;
             default:
-                System.out.println("default help");
+                printHelpAndExit("Httpc is a curl-like application but supports HTTP protocol only.", "Use \"httpc help [command]\" for more information about a command");
         }
     }
 }

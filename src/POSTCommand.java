@@ -6,13 +6,11 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.Vector;
 
-public class POSTCommand extends Command {
+public class POSTCommand extends RequestCommand {
 
-    Vector<String> inlineHeaders;
-    StringHolder filePath;
     StringHolder inlineData;
+    StringHolder filePath;
 
     public POSTCommand(String[] args) {
         super("httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL", args);
@@ -20,13 +18,11 @@ public class POSTCommand extends Command {
 
     @Override
     protected void registerOptions() {
-        inlineHeaders = new Vector<>(10);
         inlineData = new StringHolder();
         filePath = new StringHolder();
 
-        argParser.addOption("-h %s", inlineHeaders);
-        argParser.addOption("-d %s", inlineData);
-        argParser.addOption("-f %s", filePath);
+        argParser.addOption("-d %s #The inline-data to consider as the body of the request.", inlineData);
+        argParser.addOption("-f %s #Text file input to use content as the body of the request.", filePath);
     }
 
     @Override
@@ -96,14 +92,21 @@ public class POSTCommand extends Command {
 
         String responseString = "";
         if (verbose.value) {
-            System.out.println("verbose true");
             responseString = response.toString();
         } else {
             responseString = response.getBody();
         }
 
-        //TODO: print to file?
-        System.out.println("printing");
         System.out.println(responseString);
+
+        if (inFilePath.value != null && !inFilePath.value.isEmpty()) {
+            try {
+                System.out.println(inFilePath.value);
+                printToFile(inFilePath.value, responseString);
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                System.out.println("Invalid file path");
+            }
+        }
     }
 }

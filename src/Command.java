@@ -1,7 +1,6 @@
 import argparser.ArgParser;
 import argparser.BooleanHolder;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,7 +15,6 @@ public abstract class Command {
         argParser = new ArgParser(commandName);
         this.args = args;
         registerOptions();
-        argParser.addOption("-v %v #Verbose output flag.", verbose);
     }
 
     protected abstract void registerOptions();
@@ -29,7 +27,7 @@ public abstract class Command {
         argParser.matchAllArgs(this.args, 0, ArgParser.EXIT_ON_ERROR);
     }
 
-    private void printToFile(String path, String response) throws IOException {
+    public void printToFile(String path, String response) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(path));
         writer.write(response);
         writer.close();
@@ -40,9 +38,16 @@ public abstract class Command {
         System.exit(0);
     }
 
-    public final void printHelpAndExit(String error){
-        System.out.println(error);
+    public final void printHelpAndExit(String message){
+        System.out.println(message);
         System.out.println(argParser.getHelpMessage());
+        System.exit(0);
+    }
+
+    public final void printHelpAndExit(String leading, String trailing){
+        System.out.println(leading);
+        System.out.println(argParser.getHelpMessage());
+        System.out.println(trailing);
         System.exit(0);
     }
 }

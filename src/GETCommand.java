@@ -2,16 +2,13 @@ import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.*;
 import argparser.StringHolder;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Vector;
 
-public class GETCommand extends Command {
-
-    private Vector<String> inlineHeaders;
-    private StringHolder filePath;
-    private StringHolder inlineData;
+public class GETCommand extends RequestCommand {
 
     public GETCommand(String[] args) {
         super("httpc get [-v] [-h key:value] URL", args);
@@ -20,12 +17,6 @@ public class GETCommand extends Command {
     @Override
     protected void registerOptions() {
         inlineHeaders = new Vector<>(10);
-        inlineData = new StringHolder();
-        filePath = new StringHolder();
-
-        argParser.addOption("-h %s #k:v | An request header entry where k is the key and v is the value.", inlineHeaders);
-        argParser.addOption("-d %s #The inline-data to consider as the body of the request.", inlineData);
-        argParser.addOption("-f %s #Text file input to use content as the body of the request.", filePath);
     }
 
     @Override
@@ -69,6 +60,17 @@ public class GETCommand extends Command {
             responseString = response.getBody();
         }
 
+        System.out.println("printing");
+        System.out.println(responseString);
 
+        if (inFilePath.value != null && !inFilePath.value.isEmpty()) {
+            try {
+                System.out.println(inFilePath.value);
+                printToFile(inFilePath.value, responseString);
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                System.out.println("Invalid file path");
+            }
+        }
     }
 }

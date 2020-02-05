@@ -1,7 +1,8 @@
 import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidRequestException;
 import argparser.ArgParser;
-import java.io.*;
+
+import java.io.IOException;
 
 public class Httpc {
 
@@ -9,11 +10,16 @@ public class Httpc {
 
     public static void main(String[] args) throws IOException, HttpFormatException, InvalidRequestException {
         if (args.length == 0) {
-            // TODO: Print help simply in that case
-            args = new String[]{"post", "-h", "key1:value1", "-v", "-d",  "{String: Hello how's it going?}", "-h", "key2:value2", "http://postman-echo.com/post?key1=vaelue1"};
+            System.out.println("\n");
+
+//            args = new String[]{"post", "-h", "key1:value1", "-v", "-o", "output/out1.txt", "-h", "content-type:application/x-www-form-urlencoded",  "-f",  "input/in1.txt", "-h", "key2:value2", "http://postman-echo.com/post?key1=value1"};
+            args = new String[]{"get", "-h", "key1:value1", "-v", "-o", "output/out1.txt", "-h", "content-type:application/x-www-form-urlencoded",  "-f",  "input/in1.txt", "-h", "key2:value2", "http://postman-echo.com/get?key1=value1"};
 //            args = new String[]{"help", "get"};
 //            args = new String[]{"help", "post"};
 //            args = new String[]{"help"};
+//
+//            Command c = new HELPCommand(args);
+//            c.run();
         }
 
         // Strip arguments
