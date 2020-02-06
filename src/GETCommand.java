@@ -60,7 +60,7 @@ public class GETCommand extends RequestCommand {
             responseString = response.getBody();
         }
 
-        System.out.println("printing");
+        // Printing
         System.out.println(responseString);
 
         if (inFilePath.value != null && !inFilePath.value.isEmpty()) {
@@ -70,6 +70,7 @@ public class GETCommand extends RequestCommand {
             } catch (IOException e) {
                 System.out.println(e.getMessage());
                 System.out.println("Invalid file path");
+                printHelpAndExit();
             }
         }
     }

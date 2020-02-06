@@ -106,6 +106,7 @@ public class POSTCommand extends RequestCommand {
             } catch (IOException e) {
                 System.out.println(e.getMessage());
                 System.out.println("Invalid file path");
+                printHelpAndExit();
             }
         }
     }
