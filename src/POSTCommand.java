@@ -12,6 +12,7 @@ public class POSTCommand extends RequestCommand {
 
     StringHolder inlineData;
     StringHolder filePath;
+    StringHolder tempHolder;
 
     public POSTCommand(String[] args) {
         super("httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL", args);
@@ -20,9 +21,10 @@ public class POSTCommand extends RequestCommand {
     @Override
     protected void registerOptions() {
         inlineData = new StringHolder();
+        tempHolder = new StringHolder();
         filePath = new StringHolder();
 
-//        argParser.addOption("-d %s #The inline-data to consider as the body of the request.", inlineData);
+        argParser.addOption("-d %s #The inline-data to consider as the body of the request surround by ''.", tempHolder);
         argParser.addOption("-f %s #Text file input to use content as the body of the request.", filePath);
     }
 
@@ -33,7 +35,11 @@ public class POSTCommand extends RequestCommand {
         // Get URL from last argument
         URL url = null;
         try {
-            url = new URL(args[args.length - 1]);
+            String url_string = args[args.length - 1];
+            if (url_string.matches("([\"'])(?:(?=(\\\\?))\\2.)*?\\1"))
+                url = new URL(url_string.substring(1, url_string.length()-1));
+            else
+                url = new URL(url_string);
         } catch (MalformedURLException e) {
             printHelpAndExit(e.getMessage());
         }
