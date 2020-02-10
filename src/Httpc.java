@@ -9,18 +9,8 @@ public class Httpc {
     private static ArgParser argParser = new ArgParser("httpc");
 
     public static void main(String[] args) throws IOException, HttpFormatException, InvalidRequestException {
-        if (args.length == 0) {
-            System.out.println("\n");
-
-//            args = new String[]{"post", "-h", "key1:value1", "-v", "-o", "output/out1.txt", "-h", "content-type:application/x-www-form-urlencoded",  "-f",  "input/in1.txt", "-h", "key2:value2", "http://postman-echo.com/post?key1=value1"};
-            args = new String[]{"get", "-h", "key1:value1", "-v", "-o", "output/out1.txt", "-h", "content-type:application/x-www-form-urlencoded",  "-f",  "input/in1.txt", "-h", "key2:value2", "http://postman-echo.com/get?key1=value1"};
-//            args = new String[]{"help", "get"};
-//            args = new String[]{"help", "post"};
-//            args = new String[]{"help"};
-//
-//            Command c = new HELPCommand(args);
-//            c.run();
-        }
+        if (args.length == 0)
+            printHelpAndExit();
 
         // Strip arguments
         String[] commandArgs = new String[args.length-1];
