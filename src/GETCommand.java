@@ -26,7 +26,11 @@ public class GETCommand extends RequestCommand {
         // Get URL from last argument
         URL url = null;
         try {
-            url = new URL(args[args.length - 1]);
+            String url_string = args[args.length - 1];
+            if (url_string.matches("([\"'])(?:(?=(\\\\?))\\2.)*?\\1"))
+                url = new URL(url_string.substring(1, url_string.length()-1));
+            else
+                url = new URL(url_string);
         } catch (MalformedURLException e) {
             printHelpAndExit(e.getMessage());
         }
