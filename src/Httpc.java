@@ -1,42 +1,46 @@
+import HttpLib.Exceptions.HttpFormatException;
+import HttpLib.Exceptions.InvalidRequestException;
+import argparser.ArgParser;
+
+import java.io.IOException;
+
 public class Httpc {
 
-    // TODO: Handle get|post command (2 different method maybe?)
-    // TODO: FileReader -> to body
-    // TODO: Inline-Data -> body
-    // TODO: Check for application argument library
+    private static ArgParser argParser = new ArgParser("httpc");
 
-    public void parseArgs(String args[]) {
-        RequestData requestData = new RequestData();
-        requestData.method = args[0];
-        requestData.url = args[1];
+    public static void main(String[] args) throws IOException, HttpFormatException, InvalidRequestException {
+        if (args.length == 0)
+            printHelpAndExit();
 
-    }
+        // Strip arguments
+        String[] commandArgs = new String[args.length-1];
+        for(int i=1; i<args.length; i++)
+            commandArgs[i-1] = args[i];
 
-    public String createRequest(RequestData requestData) {
-        StringBuilder requestBuilder = new StringBuilder();
-
-        if (requestData.method.equals("POST")) {
-            requestBuilder.append("POST /post ");
-        } else if (requestData.method.equals("GET")) {
-            requestBuilder.append("GET /get ");
-        } else {
-            return "";
+        // Route command
+        String command = args[0].toUpperCase();
+        switch (command){
+            case "GET":
+                new GETCommand(commandArgs).run();
+                break;
+            case "POST":
+                new POSTCommand(commandArgs).run();
+                break;
+            case "HELP":
+                new HELPCommand(commandArgs).run();
+                break;
+            default:
+                printHelpAndExit();
         }
-        requestBuilder.append(requestData.httpVersion).append("\r\n");
-
-        for (String header : requestData.headers) {
-            requestBuilder.append(header).append("\r\n");
-        }
-
-        requestBuilder.append("Content-Length: ").append(requestData.body.length()).append("\r\n");
-        requestBuilder.append("\r\n");
-        requestBuilder.append(requestData.body);
-
-        return requestBuilder.toString();
 
     }
 
-    public void sendRequest() {
-
+    /**
+     * Will display the command-line information and exit the program.
+     */
+    private static void printHelpAndExit() {
+        System.out.println(argParser.getHelpMessage());
+        System.exit(0);
     }
+
 }

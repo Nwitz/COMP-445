@@ -6,8 +6,8 @@ package HttpLib;
  */
 public class HttpRequestBody {
 
-    int length = 0;
-    String body = "";
+    private int length = 0;
+    private String body = "";
 
     public HttpRequestBody() {
     }
@@ -19,6 +19,11 @@ public class HttpRequestBody {
 
     public String toString() {
         return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+        length = body.length();
     }
 
     public String getLengthString() {

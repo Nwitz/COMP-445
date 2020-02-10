@@ -12,6 +12,11 @@ public class HttpRequest {
     HttpMessageHeader messageHeader;
     HttpRequestBody body;
 
+    public HttpRequest(URL url, HttpRequestMethod requestMethod, HttpMessageHeader messageHeader) {
+        this(url, requestMethod, messageHeader, new HttpRequestBody());
+    }
+
+
     public HttpRequest(URL url, HttpRequestMethod requestMethod, HttpMessageHeader messageHeader, HttpRequestBody body) {
         this.url = new HttpMessageUrl(url);
         this.requestMethod = requestMethod;

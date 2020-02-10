@@ -1,0 +1,11 @@
+HTTP/1.1 200 
+set-cookie: sails.sid=s%3ASqvSDgXA1zRqIcdYRkLGY9hPFx1k1_Dv.wGP9k%2FfTlN2064ZEXypdzFN4QJcRiO8xSGHxwDFfZDQ; Path=/; HttpOnly
+Server: nginx
+ETag: W/"10a-GVHe2LzAueNn5SENd3cKE62F4eM"
+Connection: Close
+Vary: Accept-Encoding
+Content-Length: 266
+Date: Wed, 05 Feb 2020 20:58:31 GMT
+Content-Type: application/json; charset=utf-8
+
+{"args":{"key1":"value1?key1=value1"},"headers":{"x-forwarded-proto":"https","host":"172.31.56.200","content-type":"application/x-www-form-urlencoded","key1":"value1","key2":"value2","x-forwarded-port":"80"},"url":"https://172.31.56.200/get?key1=value1?key1=value1"}

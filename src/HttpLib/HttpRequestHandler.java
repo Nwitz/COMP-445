@@ -1,5 +1,6 @@
 package HttpLib;
 
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -8,7 +9,11 @@ import java.net.Socket;
 import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.Exceptions.InvalidResponseException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.Socket;
 
 /**
  * Handler to ease sending and receiving HTTP Requests & Responses.
