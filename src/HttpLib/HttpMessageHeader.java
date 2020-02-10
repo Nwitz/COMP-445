@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The HTTP message header object that allows parsing to retrieves
+ * header entry information and stores it in a HashMap.
+ */
 public class HttpMessageHeader {
 
     private HashMap<String, String> _entries = new HashMap<>();
@@ -16,16 +20,16 @@ public class HttpMessageHeader {
 
         if (regMatcher.find()) {
             String key = regMatcher.group(1);
-            if(!_entries.containsKey(key))
+            if (!_entries.containsKey(key))
                 _entries.remove(key);
 
             _entries.put(key, regMatcher.group(2));
-        }else {
+        } else {
             throw new HttpFormatException("Header entry not well formatted.");
         }
     }
 
-    public boolean isValid(){
+    public boolean isValid() {
         // Check for required header field presence (version > 1.0 only)
         // Note: Not required for this assignment.
         return true;

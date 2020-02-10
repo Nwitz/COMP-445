@@ -3,6 +3,10 @@ package HttpLib;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+/**
+ * Defines the potential Status code a response may have.
+ * Allows for reverse lookup from an integer.
+ */
 public enum HttpStatusCode {
     OK(200), Created(201), Accepted(202), NoContent(204),
     BadRequest(400), Unauthorized(401), Forbidden(403), NotFound(404),

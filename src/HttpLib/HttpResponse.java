@@ -3,6 +3,9 @@ package HttpLib;
 import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidResponseException;
 
+/**
+ * The entire response objects,
+ */
 public class HttpResponse {
 
     String version = "HTTP/1.0";
