@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 public class POSTCommand extends RequestCommand {
 
@@ -21,7 +22,7 @@ public class POSTCommand extends RequestCommand {
         inlineData = new StringHolder();
         filePath = new StringHolder();
 
-        argParser.addOption("-d %s #The inline-data to consider as the body of the request.", inlineData);
+//        argParser.addOption("-d %s #The inline-data to consider as the body of the request.", inlineData);
         argParser.addOption("-f %s #Text file input to use content as the body of the request.", filePath);
     }
 
@@ -49,15 +50,17 @@ public class POSTCommand extends RequestCommand {
         }
 
         // Get Data
+        inlineData.value = getInlineData(args);
+
         HttpRequestBody body = new HttpRequestBody();
-        if (inlineData.value != null && filePath.value != null) {
+        if (!inlineData.value.isEmpty() && filePath.value != null) {
             // Cannot have both a filePath and inline-data
             System.out.println("httpc post cannot use both -d and -f and the same time.");
             System.out.println();
             printHelpAndExit();
 
         } else {
-            if (inlineData.value != null && !inlineData.value.isEmpty()) {
+            if (!inlineData.value.isEmpty()) {
                 body.setBody(inlineData.value);
             }
             if (filePath.value != null && !filePath.value.isEmpty()) {
@@ -109,5 +112,39 @@ public class POSTCommand extends RequestCommand {
                 printHelpAndExit();
             }
         }
+    }
+
+    private String getInlineData(String[] args) {
+        boolean record = false;
+        boolean addLeadingSpace = false;
+        String inlineEnd = ".*'$";
+        StringBuilder sb = new StringBuilder();
+        for (String arg : args) {
+            if (arg.equals("-d")) {
+                record = true;
+                continue;
+            }
+            if (record) {
+                if (!addLeadingSpace) {
+                    addLeadingSpace = true;
+                    if  (arg.matches(inlineEnd)) {
+                        sb.append(arg, 1, arg.length()-1);
+                        break;
+                    } else {
+                        sb.append(arg.substring(1));
+                    }
+                } else {
+                    sb.append(" ");
+                    if (arg.matches(inlineEnd)) {
+                        sb.append(arg, 0, arg.length() - 1);
+                        break;
+                    } else {
+                        sb.append(arg);
+                    }
+                }
+            }
+
+        }
+        return sb.toString();
     }
 }
