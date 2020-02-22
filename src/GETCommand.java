@@ -1,80 +1,73 @@
 import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.*;
-import argparser.StringHolder;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.Map;
 
-public class GETCommand extends RequestCommand {
+@Command(name = "get", description = "executes a HTTP GET request and prints the response.")
+public class GETCommand implements Runnable {
 
-    public GETCommand(String[] args) {
-        super("httpc get [-v] [-h key:value] URL", args);
-    }
+    @Parameters(paramLabel = "URL", arity = "1")
+    URL url;
 
-    @Override
-    protected void registerOptions() {
-        inlineHeaders = new Vector<>(10);
-    }
+    @CommandLine.Mixin
+    private CommandMixins.Verbose verbose;
+
+    @CommandLine.Mixin
+    private CommandMixins.RequestHeader h;
+
+    @Option(names={"-o", "--output"})
+    File outputFile;
 
     @Override
     public void run() {
-        super.run();
-
-        // Get URL from last argument
-        URL url = null;
-        try {
-            String url_string = args[args.length - 1];
-            if (url_string.matches("([\"'])(?:(?=(\\\\?))\\2.)*?\\1"))
-                url = new URL(url_string.substring(1, url_string.length()-1));
-            else
-                url = new URL(url_string);
-        } catch (MalformedURLException e) {
-            printHelpAndExit(e.getMessage());
-        }
-
         // Extract all headers from command options
         HttpMessageHeader header = new HttpMessageHeader();
-        try {
-            Iterator value = inlineHeaders.iterator();
-            while (value.hasNext()) {
-                header.parseLine(((StringHolder) value.next()).value);
+        if (h.headersMap != null) {
+            for (Map.Entry<String, String> entry : h.headersMap.entrySet()) {
+                header.addEntry(entry.getKey(), entry.getValue());
             }
-        }catch (HttpFormatException e){
-            printHelpAndExit();
         }
-
 
         HttpRequest request = new HttpRequest(url, HttpRequestMethod.GET, header);
         HttpResponse response = null;
         try {
             response = new HttpRequestHandler().send(request);
         } catch (Exception e) {
-            printHelpAndExit(e.getMessage());
+            System.out.println(e.getMessage());
+            CommandLine commandLine = new CommandLine(new GETCommand());
+            commandLine.usage(System.out);
+            System.exit(0);
         }
 
         String responseString = "";
-        if (verbose.value) {
-            assert response != null;
+        assert response != null;
+        if (verbose.active) {
             responseString = response.toString();
         } else {
-            assert response != null;
             responseString = response.getBody();
         }
 
         // Printing
         System.out.println(responseString);
 
-        if (inFilePath.value != null && !inFilePath.value.isEmpty()) {
+        // Saving to file
+        if(outputFile != null){
             try {
-                System.out.println(inFilePath.value);
-                printToFile(inFilePath.value, responseString);
-            } catch (IOException e) {
+                Httpc.printToFile(outputFile.getPath(), responseString);
+                System.out.println();
+                System.out.println("Content printed to output file: " + outputFile.getPath());
+            }catch (IOException e){
                 System.out.println(e.getMessage());
-                System.out.println("Invalid file path");
-                printHelpAndExit();
+                CommandLine commandLine = new CommandLine(new GETCommand());
+                commandLine.usage(System.out);
+                System.exit(0);
             }
         }
     }

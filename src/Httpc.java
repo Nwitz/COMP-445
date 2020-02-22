@@ -1,46 +1,35 @@
 import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidRequestException;
-import argparser.ArgParser;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 
-public class Httpc {
+@Command(name = "httpc",
+        description = "httpc is a curl-like application but supports HTTP protocol only.",
+        synopsisSubcommandLabel = "COMMAND",
+        subcommands = {CommandLine.HelpCommand.class, GETCommand.class},
+        version = "1.0")
+public class Httpc implements Runnable {
 
-    private static ArgParser argParser = new ArgParser("httpc");
-
-    public static void main(String[] args) throws IOException, HttpFormatException, InvalidRequestException {
-        if (args.length == 0)
-            printHelpAndExit();
-
-        // Strip arguments
-        String[] commandArgs = new String[args.length-1];
-        for(int i=1; i<args.length; i++)
-            commandArgs[i-1] = args[i];
-
-        // Route command
-        String command = args[0].toUpperCase();
-        switch (command){
-            case "GET":
-                new GETCommand(commandArgs).run();
-                break;
-            case "POST":
-                new POSTCommand(commandArgs).run();
-                break;
-            case "HELP":
-                new HELPCommand(commandArgs).run();
-                break;
-            default:
-                printHelpAndExit();
-        }
-
+    @CommandLine.Spec CommandLine.Model.CommandSpec spec;
+    public void run() {
+        throw new CommandLine.ParameterException(spec.commandLine(), "Missing required subcommand");
     }
 
-    /**
-     * Will display the command-line information and exit the program.
-     */
-    private static void printHelpAndExit() {
-        System.out.println(argParser.getHelpMessage());
-        System.exit(0);
+    public static void main(String[] args) {
+        // Bootstrap entire app
+        System.exit(new CommandLine(new Httpc()).execute(args));
     }
 
+    public static void printToFile(String path, String content) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+        writer.write(content);
+        writer.close();
+    }
 }

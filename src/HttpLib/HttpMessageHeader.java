@@ -19,14 +19,16 @@ public class HttpMessageHeader {
         Matcher regMatcher = headerReg.matcher(headerLine);
 
         if (regMatcher.find()) {
-            String key = regMatcher.group(1);
-            if (!_entries.containsKey(key))
-                _entries.remove(key);
-
-            _entries.put(key, regMatcher.group(2));
+            addEntry(regMatcher.group(1), regMatcher.group(2));
         } else {
             throw new HttpFormatException("Header entry not well formatted.");
         }
+    }
+
+    public void addEntry(String key, String value){
+        // Will replace if exists
+        _entries.remove(key);
+        _entries.put(key, value);
     }
 
     public boolean isValid() {
