@@ -1,46 +1,48 @@
-import HttpLib.Exceptions.HttpFormatException;
-import HttpLib.Exceptions.InvalidRequestException;
-import argparser.ArgParser;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
-import java.io.IOException;
+@Command(name = "httpc",
+        description = "httpc is a curl-like application but supports HTTP protocol only.",
+        synopsisSubcommandLabel = "COMMAND",
+        subcommands = {
+                CommandLine.HelpCommand.class,
+                GETCommand.class,
+                POSTCommand.class
+        },
+        version = "1.0")
+public class Httpc implements Runnable {
 
-public class Httpc {
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
 
-    private static ArgParser argParser = new ArgParser("httpc");
-
-    public static void main(String[] args) throws IOException, HttpFormatException, InvalidRequestException {
-        if (args.length == 0)
-            printHelpAndExit();
-
-        // Strip arguments
-        String[] commandArgs = new String[args.length-1];
-        for(int i=1; i<args.length; i++)
-            commandArgs[i-1] = args[i];
-
-        // Route command
-        String command = args[0].toUpperCase();
-        switch (command){
-            case "GET":
-                new GETCommand(commandArgs).run();
-                break;
-            case "POST":
-                new POSTCommand(commandArgs).run();
-                break;
-            case "HELP":
-                new HELPCommand(commandArgs).run();
-                break;
-            default:
-                printHelpAndExit();
-        }
-
+    public void run() {
+        throw new CommandLine.ParameterException(spec.commandLine(), "Missing required subcommand");
     }
 
-    /**
-     * Will display the command-line information and exit the program.
-     */
-    private static void printHelpAndExit() {
-        System.out.println(argParser.getHelpMessage());
+    public static void main(String[] args) {
+        // Bootstrap entire app
+        System.exit(new CommandLine(new Httpc()).execute(args));
+    }
+
+    /////
+    // Helper functions
+
+    public static void printHelpAndExit(Runnable command){
+        CommandLine commandLine = new CommandLine(command);
+        commandLine.usage(System.out);
         System.exit(0);
     }
 
+    public static void printHelpAndExit(Runnable command, String message){
+        System.out.println(message);
+        printHelpAndExit(command);
+    }
+
+    public static void printHelpAndExit(Runnable command, String leading, String trailing){
+        System.out.println(leading);
+        CommandLine commandLine = new CommandLine(command);
+        commandLine.usage(System.out);
+        System.out.println(trailing);
+        System.exit(0);
+    }
 }
