@@ -10,7 +10,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 
-@Command(name = "post", description = "executes a HTTP POST request and prints the response.")
+@Command(name = "post", description = "executes a HTTP POST request for a given URL with inline data or from file.")
 public class POSTCommand implements Runnable {
 
     // Create a required option group, with mutual exclusivity
@@ -18,9 +18,9 @@ public class POSTCommand implements Runnable {
     ExclusiveParams dataSource;
 
     static class ExclusiveParams {
-        @Option(names = {"-d", "--inline-data"}, required = true)
+        @Option(names = {"-d", "--inline-data"}, required = true, description = "Associates an inline data to the body HTTP POST request.")
         String inlineData;
-        @Option(names = {"-f", "--input-file"}, required = true)
+        @Option(names = {"-f", "--input-file"}, required = true, description = "Associates the content of a file to the body HTTP POST request.")
         File inputFile;
     }
 
