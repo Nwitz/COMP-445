@@ -1,106 +1,82 @@
-import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.*;
-import argparser.StringHolder;
+import picocli.CommandLine;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.regex.Pattern;
+import java.util.Map;
 
-public class POSTCommand extends RequestCommand {
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
-    StringHolder inlineData;
-    StringHolder filePath;
-    StringHolder tempHolder;
 
-    public POSTCommand(String[] args) {
-        super("httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL", args);
+@Command(name = "post", description = "executes a HTTP POST request and prints the response.")
+public class POSTCommand implements Runnable {
+
+    // Create a required option group, with mutual exclusivity
+    @CommandLine.ArgGroup(multiplicity = "1")
+    ExclusiveParams dataSource;
+
+    static class ExclusiveParams {
+        @Option(names = {"-d", "--inline-data"}, required = true)
+        String inlineData;
+        @Option(names = {"-f", "--input-file"}, required = true)
+        File inputFile;
     }
 
-    @Override
-    protected void registerOptions() {
-        inlineData = new StringHolder();
-        tempHolder = new StringHolder();
-        filePath = new StringHolder();
+    @Parameters(paramLabel = "URL", arity = "1")
+    URL url;
 
-        argParser.addOption("-d %s #The inline-data to consider as the body of the request surround by ''.", tempHolder);
-        argParser.addOption("-f %s #Text file input to use content as the body of the request.", filePath);
-    }
+    @CommandLine.Mixin
+    private CommandMixins.DefaultOptions defaultOptions;
+
+    @CommandLine.Mixin
+    private CommandMixins.RequestHeader h;
 
     @Override
     public void run() {
-        super.run();
-
-        // Get URL from last argument
-        URL url = null;
-        try {
-            String url_string = args[args.length - 1];
-            if (url_string.matches("([\"'])(?:(?=(\\\\?))\\2.)*?\\1"))
-                url = new URL(url_string.substring(1, url_string.length()-1));
-            else
-                url = new URL(url_string);
-        } catch (MalformedURLException e) {
-            printHelpAndExit(e.getMessage());
-        }
-
         // Extract all headers from command options
         HttpMessageHeader header = new HttpMessageHeader();
-        try {
-            Iterator value = inlineHeaders.iterator();
-            while (value.hasNext()) {
-                header.parseLine(((StringHolder) value.next()).value);
+        if (h.headersMap != null) {
+            for (Map.Entry<String, String> entry : h.headersMap.entrySet()) {
+                header.addEntry(entry.getKey(), entry.getValue());
             }
-        }catch (HttpFormatException e){
-            printHelpAndExit();
         }
-
-        // Get Data
-        inlineData.value = getInlineData(args);
 
         HttpRequestBody body = new HttpRequestBody();
-        if (!inlineData.value.isEmpty() && filePath.value != null) {
-            // Cannot have both a filePath and inline-data
-            System.out.println("httpc post cannot use both -d and -f and the same time.");
-            System.out.println();
-            printHelpAndExit();
-
-        } else {
-            if (!inlineData.value.isEmpty()) {
-                body.setBody(inlineData.value);
+        if (dataSource.inlineData != null && !dataSource.inlineData.isEmpty()) {
+            body.setBody(dataSource.inlineData);
+        }
+        if (dataSource.inputFile != null) {
+            if(!dataSource.inputFile.exists()){
+                Httpc.printHelpAndExit(this, "The given input file does not exist.");
             }
-            if (filePath.value != null && !filePath.value.isEmpty()) {
-                try {
-                    File file = new File(filePath.value);
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(dataSource.inputFile));
+                StringBuilder fileStringBuilder = new StringBuilder();
 
-                    BufferedReader br = new BufferedReader(new FileReader(file));
-                    StringBuilder fileStringBuilder = new StringBuilder();
-
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        fileStringBuilder.append(line).append("\n");
-                    }
-                    body.setBody(fileStringBuilder.toString());
-                } catch (FileNotFoundException e) {
-                    printHelpAndExit(e.getMessage());
-                } catch (IOException e) {
-                    printHelpAndExit(e.getMessage());
+                String line;
+                while ((line = br.readLine()) != null) {
+                    fileStringBuilder.append(line).append("\n");
                 }
+                body.setBody(fileStringBuilder.toString());
+            } catch (Exception e) {
+                Httpc.printHelpAndExit(this, e.getMessage());
             }
         }
 
 
+        // Processing the request
         HttpRequest request = new HttpRequest(url, HttpRequestMethod.POST, header, body);
         HttpResponse response = null;
         try {
             response = new HttpRequestHandler().send(request);
         } catch (Exception e) {
-            printHelpAndExit(e.getMessage());
+            Httpc.printHelpAndExit(this, e.getMessage());
         }
 
-
         String responseString = "";
-        if (verbose.value) {
+        if (defaultOptions.verbose) {
             responseString = response.toString();
         } else {
             responseString = response.getBody();
@@ -108,49 +84,11 @@ public class POSTCommand extends RequestCommand {
 
         System.out.println(responseString);
 
-        if (inFilePath.value != null && !inFilePath.value.isEmpty()) {
-            try {
-                System.out.println(inFilePath.value);
-                printToFile(inFilePath.value, responseString);
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-                System.out.println("Invalid file path");
-                printHelpAndExit();
-            }
+        // Saving to file
+        try {
+            defaultOptions.SaveToFile(responseString);
+        } catch (IOException e) {
+            Httpc.printHelpAndExit(this, e.getMessage());
         }
-    }
-
-    private String getInlineData(String[] args) {
-        boolean record = false;
-        boolean addLeadingSpace = false;
-        String inlineEnd = ".*'$";
-        StringBuilder sb = new StringBuilder();
-        for (String arg : args) {
-            if (arg.equals("-d")) {
-                record = true;
-                continue;
-            }
-            if (record) {
-                if (!addLeadingSpace) {
-                    addLeadingSpace = true;
-                    if  (arg.matches(inlineEnd)) {
-                        sb.append(arg, 1, arg.length()-1);
-                        break;
-                    } else {
-                        sb.append(arg.substring(1));
-                    }
-                } else {
-                    sb.append(" ");
-                    if (arg.matches(inlineEnd)) {
-                        sb.append(arg, 0, arg.length() - 1);
-                        break;
-                    } else {
-                        sb.append(arg);
-                    }
-                }
-            }
-
-        }
-        return sb.toString();
     }
 }

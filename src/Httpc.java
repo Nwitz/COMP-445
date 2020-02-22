@@ -1,23 +1,20 @@
-import HttpLib.Exceptions.HttpFormatException;
-import HttpLib.Exceptions.InvalidRequestException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URL;
 
 @Command(name = "httpc",
         description = "httpc is a curl-like application but supports HTTP protocol only.",
         synopsisSubcommandLabel = "COMMAND",
-        subcommands = {CommandLine.HelpCommand.class, GETCommand.class},
+        subcommands = {
+                CommandLine.HelpCommand.class,
+                GETCommand.class,
+                POSTCommand.class
+        },
         version = "1.0")
 public class Httpc implements Runnable {
 
-    @CommandLine.Spec CommandLine.Model.CommandSpec spec;
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
+
     public void run() {
         throw new CommandLine.ParameterException(spec.commandLine(), "Missing required subcommand");
     }
@@ -27,9 +24,25 @@ public class Httpc implements Runnable {
         System.exit(new CommandLine(new Httpc()).execute(args));
     }
 
-    public static void printToFile(String path, String content) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
-        writer.write(content);
-        writer.close();
+    /////
+    // Helper functions
+
+    public static void printHelpAndExit(Runnable command){
+        CommandLine commandLine = new CommandLine(command);
+        commandLine.usage(System.out);
+        System.exit(0);
+    }
+
+    public static void printHelpAndExit(Runnable command, String message){
+        System.out.println(message);
+        printHelpAndExit(command);
+    }
+
+    public static void printHelpAndExit(Runnable command, String leading, String trailing){
+        System.out.println(leading);
+        CommandLine commandLine = new CommandLine(command);
+        commandLine.usage(System.out);
+        System.out.println(trailing);
+        System.exit(0);
     }
 }

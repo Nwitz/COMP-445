@@ -1,11 +1,8 @@
-import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
@@ -17,13 +14,10 @@ public class GETCommand implements Runnable {
     URL url;
 
     @CommandLine.Mixin
-    private CommandMixins.Verbose verbose;
+    private CommandMixins.DefaultOptions defaultOptions;
 
     @CommandLine.Mixin
     private CommandMixins.RequestHeader h;
-
-    @Option(names={"-o", "--output"})
-    File outputFile;
 
     @Override
     public void run() {
@@ -40,15 +34,12 @@ public class GETCommand implements Runnable {
         try {
             response = new HttpRequestHandler().send(request);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            CommandLine commandLine = new CommandLine(new GETCommand());
-            commandLine.usage(System.out);
-            System.exit(0);
+            Httpc.printHelpAndExit(this, e.getMessage());
         }
 
         String responseString = "";
         assert response != null;
-        if (verbose.active) {
+        if (defaultOptions.verbose) {
             responseString = response.toString();
         } else {
             responseString = response.getBody();
@@ -58,17 +49,10 @@ public class GETCommand implements Runnable {
         System.out.println(responseString);
 
         // Saving to file
-        if(outputFile != null){
-            try {
-                Httpc.printToFile(outputFile.getPath(), responseString);
-                System.out.println();
-                System.out.println("Content printed to output file: " + outputFile.getPath());
-            }catch (IOException e){
-                System.out.println(e.getMessage());
-                CommandLine commandLine = new CommandLine(new GETCommand());
-                commandLine.usage(System.out);
-                System.exit(0);
-            }
+        try{
+            defaultOptions.SaveToFile(responseString);
+        }catch (IOException e){
+            Httpc.printHelpAndExit(this, e.getMessage());
         }
     }
 }
