@@ -1,3 +1,5 @@
+package Httpc;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 

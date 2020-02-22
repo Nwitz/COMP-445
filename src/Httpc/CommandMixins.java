@@ -1,3 +1,5 @@
+package Httpc;
+
 import picocli.CommandLine.Option;
 
 import java.io.BufferedWriter;
