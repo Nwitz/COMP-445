@@ -1,10 +1,8 @@
 package HttpLib;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 
 import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.Exceptions.InvalidResponseException;
@@ -12,10 +10,7 @@ import HttpLib.Exceptions.InvalidResponseException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URL;
 
 /**
  * Handler to ease sending and receiving HTTP Requests & Responses.
@@ -88,6 +83,34 @@ public class HttpRequestHandler {
         return response;
     }
 
-    // For Asg2:
-    // public void Listen(Port port, Function<HttpRequest> callback){}
+    /**
+     * Listens to a port for receiving a http request.
+     * @param port
+     * @throws IOException
+     */
+    public void Listen(int port) throws IOException {
+        InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", 80);
+        ServerSocket socket = new ServerSocket();
+        socket.bind(bindAddress, 10);
+
+        Socket caller = socket.accept();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(caller.getInputStream()));
+        PrintWriter out = new PrintWriter(caller.getOutputStream());
+
+        // Read incoming request
+        int data = reader.read();
+        while(data != -1){
+            System.out.print((char) data);
+            data = reader.read();
+        }
+
+        // Send answer
+        HttpResponse response = new HttpResponse(HttpStatusCode.OK);
+        out.write(response.toString());
+        out.flush();
+
+        out.close();
+        reader.close();
+        socket.close();
+    }
 }
