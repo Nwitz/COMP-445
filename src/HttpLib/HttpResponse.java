@@ -4,7 +4,7 @@ import HttpLib.Exceptions.HttpFormatException;
 import HttpLib.Exceptions.InvalidResponseException;
 
 /**
- * The entire response objects,
+ * The entire response objects
  */
 public class HttpResponse {
 
@@ -15,6 +15,15 @@ public class HttpResponse {
     HttpRequestBody body = new HttpRequestBody();
 
     public HttpResponse() {
+    }
+
+    public HttpResponse(HttpStatusCode statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public HttpResponse(HttpStatusCode statusCode, HttpRequestBody body) {
+        this.statusCode = statusCode;
+        this.body = body;
     }
 
     public HttpResponse(String responseString) throws InvalidResponseException {
@@ -33,9 +42,9 @@ public class HttpResponse {
 
         version = statusLine[0];
         statusCode = HttpStatusCode.get(Integer.parseInt(statusLine[1].trim()));
-        if (statusLine.length > 3){
+        if (statusLine.length > 3) {
             StringBuilder sb = new StringBuilder();
-            for(int i=2; i<statusLine.length; i++)
+            for (int i = 2; i < statusLine.length; i++)
                 sb.append(statusLine[i]).append(" ");
             phrase = sb.toString().trim();
         }
