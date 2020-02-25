@@ -4,6 +4,8 @@ import HttpLib.Exceptions.InvalidRequestException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The entire request object that can be either send and received.
@@ -47,6 +49,11 @@ public class HttpRequest {
         requestMethod = HttpRequestMethod.get(requestLine[0]);
         if(requestMethod == null) throw new InvalidRequestException("Invalid request method");
         try {
+            Pattern headerReg = Pattern.compile("(\\/+\\w*)+");
+            Matcher regMatcher = headerReg.matcher(requestLine[1]);
+            if(!regMatcher.matches())
+                throw new MalformedURLException("URL route should be relative.");
+
             url = new HttpMessageUrl(new URL("http", "127.0.0.1", requestLine[1]));
         }catch (MalformedURLException e){
             throw new InvalidRequestException(e.getMessage());

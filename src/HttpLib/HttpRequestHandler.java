@@ -115,9 +115,6 @@ public class HttpRequestHandler {
             response = new HttpResponse(HttpStatusCode.BadRequest);
         }
 
-        System.out.println(request);
-        System.out.println(request.header.getEntries());
-
         // TODO: Send HttpRequest in callback
         // TODO: Callback should return HttpResponse
         // TODO: Send HttpResponse to outputStream & close everything
