@@ -71,7 +71,7 @@ public class HttpRequest {
 
     public String toString() {
         if(!header.getEntries().containsKey("Content-Length"))
-            header.addEntry("Content-Length", Integer.toString(body.getLength()) );
+            header.addEntry("Content-Length", Integer.toString(body.getLength()));
 
         String request = requestMethod.toString() + " " + url.getFileAndQuery() + " HTTP/1.0\r\n"
                         + header.toString()

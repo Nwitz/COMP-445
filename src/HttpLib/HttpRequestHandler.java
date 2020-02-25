@@ -98,12 +98,12 @@ public class HttpRequestHandler {
         PrintWriter out = new PrintWriter(caller.getOutputStream());
 
         // Read incoming request
-        int data = reader.read();
         StringBuilder sb = new StringBuilder();
-        while (reader.ready()) {
-            sb.append((char) data);
+        int data;
+        do {
             data = reader.read();
-        }
+            sb.append((char) data);
+        } while (reader.ready());
 
         HttpRequest request = null;
         HttpResponse response = null;
