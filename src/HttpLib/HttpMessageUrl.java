@@ -20,20 +20,13 @@ public class HttpMessageUrl {
     }
 
     public String getFileAndQuery() {
-        StringBuilder fileAndQuerySB = new StringBuilder(" ");
-        boolean trailingSpaceNeeded = false;
+        StringBuilder fileAndQuerySB = new StringBuilder();
         if(_url.getFile() != null && !_url.getFile().isEmpty()) {
             fileAndQuerySB.append(_url.getFile());
-            trailingSpaceNeeded = true;
         }
 
         if (_url.getQuery() != null) {
             fileAndQuerySB.append("?").append(_url.getQuery());
-            trailingSpaceNeeded = true;
-        }
-
-        if (trailingSpaceNeeded) {
-            fileAndQuerySB.append(" ");
         }
 
         return fileAndQuerySB.toString();

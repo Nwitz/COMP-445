@@ -37,7 +37,7 @@ public class HttpMessageHeader {
         return true;
     }
 
-    public HashMap<String, String> GetEntries() {
+    public HashMap<String, String> getEntries() {
         return _entries;
     }
 
