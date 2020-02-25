@@ -89,7 +89,7 @@ public class HttpRequestHandler {
      * @throws IOException
      */
     public void Listen(int port) throws IOException {
-        InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", 80);
+        InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
         ServerSocket socket = new ServerSocket();
         socket.bind(bindAddress, 10);
 
@@ -99,8 +99,9 @@ public class HttpRequestHandler {
 
         // Read incoming request
         int data = reader.read();
-        while(data != -1){
-            System.out.print((char) data);
+        StringBuilder sb = new StringBuilder();
+        while(reader.ready()){
+            sb.append((char) data);
             data = reader.read();
         }
 
