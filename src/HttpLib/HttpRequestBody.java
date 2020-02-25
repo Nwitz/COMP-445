@@ -26,8 +26,8 @@ public class HttpRequestBody {
         length = body.length();
     }
 
-    public String getLengthString() {
-        return "Content-Length: " + body.length() + "\r\n";
+    public int getLength() {
+        return body.length();
     }
 
     public boolean isValid() {

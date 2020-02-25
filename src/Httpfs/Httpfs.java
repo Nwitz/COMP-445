@@ -49,12 +49,9 @@ public class Httpfs implements Runnable {
             System.out.println("No valid directory given. Will serve files located at " + directory);
         }
 
-        System.out.println(_port);
-        System.out.println(directory);
-
         HttpRequestHandler handler = new HttpRequestHandler();
         try {
-            handler.Listen(_port);
+            handler.listen(_port);
         } catch (IOException e) {
             e.printStackTrace();
         }

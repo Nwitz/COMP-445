@@ -68,9 +68,9 @@ public class HttpRequestHandler {
 
                 URL url = null;
                 try {
-                    url = new URL(response.header.GetEntries().get("Location"));
+                    url = new URL(response.header.getEntries().get("Location"));
                 } catch (MalformedURLException e) {
-                    throw new InvalidResponseException("Cannot redirect to invalid URL destination: " + response.header.GetEntries().get("Location"));
+                    throw new InvalidResponseException("Cannot redirect to invalid URL destination: " + response.header.getEntries().get("Location"));
                 }
 
                 request.url = new HttpMessageUrl(url);
@@ -88,7 +88,7 @@ public class HttpRequestHandler {
      * @param port
      * @throws IOException
      */
-    public void Listen(int port) throws IOException {
+    public void listen(int port) throws IOException {
         InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
         ServerSocket socket = new ServerSocket();
         socket.bind(bindAddress, 10);
@@ -98,15 +98,31 @@ public class HttpRequestHandler {
         PrintWriter out = new PrintWriter(caller.getOutputStream());
 
         // Read incoming request
-        int data = reader.read();
         StringBuilder sb = new StringBuilder();
-        while(reader.ready()){
-            sb.append((char) data);
+        int data;
+        do {
             data = reader.read();
+            sb.append((char) data);
+        } while (reader.ready());
+
+        HttpRequest request = null;
+        HttpResponse response = null;
+
+        try {
+            request = new HttpRequest(sb.toString());
+        } catch (InvalidRequestException e) {
+            System.out.println("Received an invalid HttpRequest.");
+            response = new HttpResponse(HttpStatusCode.BadRequest);
         }
 
-        // Send answer
-        HttpResponse response = new HttpResponse(HttpStatusCode.OK);
+        // TODO: Send HttpRequest in callback
+        // TODO: Callback should return HttpResponse
+        // TODO: Send HttpResponse to outputStream & close everything
+
+        // Send default answer
+        if(response == null)
+            response = new HttpResponse(HttpStatusCode.OK);
+
         out.write(response.toString());
         out.flush();
 
