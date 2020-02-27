@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 public class Httpfs implements Runnable {
     private int _port = 8080;
     // TODO: remove
-    private FileManager fileManager = new FileManager(directory = Paths.get("").toAbsolutePath());
+    private FileManager fileManager;
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;

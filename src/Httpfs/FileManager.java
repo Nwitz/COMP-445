@@ -71,8 +71,8 @@ public class FileManager {
         StringBuilder sb = new StringBuilder();
         for (final File fileEntry : folder.listFiles()){
             if (fileEntry.isDirectory()) {
-                sb.append("\n").append("\t".repeat(Math.max(0, indents)));
-                sb.append("dir: ").append(fileEntry.getName()).append("\n");
+                sb.append("\t".repeat(Math.max(0, indents)));
+                sb.append(fileEntry.getName()).append("\n");
                 sb.append(listFilesInDirectory(fileEntry, indents + 1));
             }
             else {
