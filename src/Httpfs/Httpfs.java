@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 @Command(name = "httpfs",
         description = "httpfs is a simple file server.",
         version = "1.0")
-public class Httpfs implements Runnable, IRequestCallback {
+public class Httpfs implements Runnable {
     private int _port = 8080;
     // TODO: remove
     private FileManager fileManager = new FileManager(directory = Paths.get("").toAbsolutePath());
@@ -55,42 +55,41 @@ public class Httpfs implements Runnable, IRequestCallback {
 
         HttpRequestHandler handler = new HttpRequestHandler();
         try {
-            handler.listen(_port, this);
+            handler.listen(_port, callback);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public HttpResponse onRequestReceived(HttpRequest request) {
+    IRequestCallback callback = request -> {
         HttpResponse httpResponse = new HttpResponse();
-        if (fileManager.isFilePathValid(request.getUrl().getPath())) {
-            if (request.getRequestMethod().equals(HttpRequestMethod.POST)) {
-                try {
-                    fileManager.writeToFile(request.getUrl().getPath(), request.getBody().toString());
-                } catch (IOException e) {
-                    // TODO: handle error
-                    System.out.println("onRequestReceived");
-                    e.printStackTrace();
-                }
-            } else if (request.getRequestMethod().equals(HttpRequestMethod.GET)) {
-
-                try {
-                    String responseBody;
-                    responseBody = fileManager.readFile(request.getUrl().getPath());
+        if (request.getRequestMethod().equals(HttpRequestMethod.POST)) {
+            try {
+                fileManager.writeToFile(request.getUrl().getPath(), request.getBody().toString());
+                httpResponse = new HttpResponse(HttpStatusCode.OK);
+            } catch (IOException e) {
+                httpResponse = new HttpResponse(HttpStatusCode.NotFound);
+                System.out.println("onRequestReceived");
+                e.printStackTrace();
+            }
+        } else if (request.getRequestMethod().equals(HttpRequestMethod.GET)) {
+            try {
+                String responseBody;
+                responseBody = fileManager.readFile(request.getUrl().getPath());
+                if (responseBody == null) {
+                    httpResponse = new HttpResponse(HttpStatusCode.NotFound);
+                } else {
                     HttpRequestBody body = new HttpRequestBody(responseBody);
                     httpResponse = new HttpResponse(HttpStatusCode.OK, body);
-                } catch (IOException e) {
-                    // TODO: handle error
-                    System.out.println("onRequestReceived");
-                    e.printStackTrace();
                 }
+            } catch (IOException e) {
+                httpResponse = new HttpResponse(HttpStatusCode.NotFound);
+                System.out.println("onRequestReceived");
+                e.printStackTrace();
             }
-        } else {
-
         }
         return httpResponse;
-    }
+    };
 
     public static void main(String[] args) {
         // Bootstrap entire app

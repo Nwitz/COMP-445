@@ -33,10 +33,13 @@ public class FileManager {
     }
 
     public void writeToFile(String path, String body) throws IOException {
+        path = directory.toString() + path;
+
         File file = new File(path);
 
         // Potentially used if overwrite control is used
-        boolean overwrite = file.createNewFile();
+
+        boolean fileCreated = file.createNewFile();
 
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(path));
@@ -45,6 +48,9 @@ public class FileManager {
     }
 
     public String readFile(String path) throws IOException {
+        if (path.equals("/")) {
+            return listFilesInDirectory(new File(directory.toString()), 0);
+        }
         path = directory.toString() + path;
         File file = new File(path);
         if (file.exists()) {
@@ -59,6 +65,22 @@ public class FileManager {
             return fileStringBuilder.toString();
         }
         return null;
+    }
+
+    public String listFilesInDirectory(File folder, int indents) throws IOException{
+        StringBuilder sb = new StringBuilder();
+        for (final File fileEntry : folder.listFiles()){
+            if (fileEntry.isDirectory()) {
+                sb.append("\n").append("\t".repeat(Math.max(0, indents)));
+                sb.append("dir: ").append(fileEntry.getName()).append("\n");
+                sb.append(listFilesInDirectory(fileEntry, indents + 1));
+            }
+            else {
+                sb.append("\t".repeat(Math.max(0, indents)));
+                sb.append(fileEntry.getName()).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     private void canRead(File file) {

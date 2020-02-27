@@ -8,9 +8,20 @@ import java.util.HashMap;
  * Allows for reverse lookup from an integer.
  */
 public enum HttpStatusCode {
-    OK(200), Created(201), Accepted(202), NoContent(204),
-    MovedPermanently(301), MovedTemporarily(302), NotModified(304),
-    BadRequest(400), Unauthorized(401), Forbidden(403), NotFound(404),
+    OK(200),
+    Created(201),
+    Accepted(202),
+    NoContent(204),
+
+    MovedPermanently(301),
+    MovedTemporarily(302),
+    NotModified(304),
+
+    BadRequest(400),
+    Unauthorized(401),
+    Forbidden(403),
+    NotFound(404),
+
     InternalServerError(500);
 
     private static final HashMap<Integer, HttpStatusCode> lookupCode = new HashMap<Integer, HttpStatusCode>();
