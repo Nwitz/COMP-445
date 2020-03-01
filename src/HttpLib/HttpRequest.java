@@ -36,9 +36,6 @@ public class HttpRequest {
         // Divide body from entire request
         String[] reqParts = requestString.split("(\\r\\n){2}");
 
-        if (reqParts.length < 2)
-            throw new InvalidRequestException("Http request not well formatted.");
-
         String[] beforeBody = reqParts[0].split("(\\r\\n)+");
 
         // Handle request line
@@ -48,6 +45,10 @@ public class HttpRequest {
 
         requestMethod = HttpRequestMethod.get(requestLine[0]);
         if(requestMethod == null) throw new InvalidRequestException("Invalid request method");
+        // if it is a post, make sure a body was included.
+        if (this.requestMethod == HttpRequestMethod.POST  && reqParts.length < 2)
+            throw new InvalidRequestException("Http request not well formatted.");
+
         try {
             Pattern headerReg = Pattern.compile("(\\/+\\w*)+");
             Matcher regMatcher = headerReg.matcher(requestLine[1]);
@@ -104,5 +105,15 @@ public class HttpRequest {
         return this.toString().getBytes();
     }
 
+    public HttpRequestMethod getRequestMethod() {
+        return requestMethod;
+    }
 
+    public HttpRequestBody getBody() {
+        return body;
+    }
+
+    public HttpMessageUrl getUrl() {
+        return url;
+    }
 }

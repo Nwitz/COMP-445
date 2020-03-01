@@ -88,7 +88,7 @@ public class HttpRequestHandler {
      * @param port
      * @throws IOException
      */
-    public void listen(int port) throws IOException {
+    public void listen(int port, IRequestCallback callback) throws IOException {
         InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
         ServerSocket socket = new ServerSocket();
         socket.bind(bindAddress, 10);
@@ -118,6 +118,8 @@ public class HttpRequestHandler {
         // TODO: Send HttpRequest in callback
         // TODO: Callback should return HttpResponse
         // TODO: Send HttpResponse to outputStream & close everything
+
+        response = callback.onRequestReceived(request);
 
         // Send default answer
         if(response == null)

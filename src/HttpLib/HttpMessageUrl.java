@@ -32,6 +32,10 @@ public class HttpMessageUrl {
         return fileAndQuerySB.toString();
     }
 
+    public String getPath() {
+        return _url.getPath();
+    }
+
     String getHost() {
         return _url.getHost();
     }

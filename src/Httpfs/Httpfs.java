@@ -1,6 +1,7 @@
 package Httpfs;
 
-import HttpLib.HttpRequestHandler;
+import HttpLib.*;
+import org.w3c.dom.html.HTMLTableCaptionElement;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -15,6 +16,8 @@ import java.nio.file.Paths;
         version = "1.0")
 public class Httpfs implements Runnable {
     private int _port = 8080;
+    // TODO: remove
+    private FileManager fileManager;
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
@@ -48,17 +51,49 @@ public class Httpfs implements Runnable {
             directory = Paths.get("").toAbsolutePath();
             System.out.println("No valid directory given. Will serve files located at " + directory);
         }
+        fileManager = new FileManager(directory);
 
         HttpRequestHandler handler = new HttpRequestHandler();
         try {
-            handler.listen(_port);
+            handler.listen(_port, callback);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    IRequestCallback callback = request -> {
+        HttpResponse httpResponse = new HttpResponse();
+        if (request.getRequestMethod().equals(HttpRequestMethod.POST)) {
+            try {
+                fileManager.writeToFile(request.getUrl().getPath(), request.getBody().toString());
+                httpResponse = new HttpResponse(HttpStatusCode.OK);
+            } catch (IOException e) {
+                httpResponse = new HttpResponse(HttpStatusCode.NotFound);
+                System.out.println("onRequestReceived");
+                e.printStackTrace();
+            }
+        } else if (request.getRequestMethod().equals(HttpRequestMethod.GET)) {
+            try {
+                String responseBody;
+                responseBody = fileManager.readFile(request.getUrl().getPath());
+                if (responseBody == null) {
+                    httpResponse = new HttpResponse(HttpStatusCode.NotFound);
+                } else {
+                    HttpRequestBody body = new HttpRequestBody(responseBody);
+                    httpResponse = new HttpResponse(HttpStatusCode.OK, body);
+                }
+            } catch (IOException e) {
+                httpResponse = new HttpResponse(HttpStatusCode.NotFound);
+                System.out.println("onRequestReceived");
+                e.printStackTrace();
+            }
+        }
+        return httpResponse;
+    };
+
     public static void main(String[] args) {
         // Bootstrap entire app
+//        Httpfs httpfs = new Httpfs();
         System.exit(new CommandLine(new Httpfs()).execute(args));
     }
 
