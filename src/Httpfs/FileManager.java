@@ -1,11 +1,17 @@
 package Httpfs;
 
+import kotlin.jvm.Synchronized;
+
 import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FileManager {
     Path directory;
+    HashMap<String, ReadWriteLock> fileAccessHashMap = new HashMap<String, ReadWriteLock>();
 
 
 
@@ -34,37 +40,62 @@ public class FileManager {
 
     public void writeToFile(String path, String body) throws IOException {
         path = directory.toString() + path;
-
         File file = new File(path);
-
+        ReadWriteLock lock = getFileLock(path);
+        Lock writeLock = lock.writeLock();
         // Potentially used if overwrite control is used
-
         boolean fileCreated = file.createNewFile();
 
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
-        writer.write(body);
-        writer.close();
+        try {
+            writeLock.lock();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+            writer.write(body);
+            writer.close();
+        }
+        finally {
+            writeLock.unlock();
+        }
     }
 
     public String readFile(String path) throws IOException {
         if (path.equals("/")) {
             return listFilesInDirectory(new File(directory.toString()), 0);
         }
+
         path = directory.toString() + path;
         File file = new File(path);
-        if (file.exists()) {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            StringBuilder fileStringBuilder = new StringBuilder();
+        ReadWriteLock lock = getFileLock(path);
+        Lock readLock = lock.readLock();
 
-            String line;
-            while ((line = br.readLine()) != null) {
-                fileStringBuilder.append(line).append("\n");
+        try {
+            readLock.lock();
+            if (file.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                StringBuilder fileStringBuilder = new StringBuilder();
+
+                String line;
+                while ((line = br.readLine()) != null) {
+                    fileStringBuilder.append(line).append("\n");
+                }
+
+                return fileStringBuilder.toString();
             }
-
-            return fileStringBuilder.toString();
+        } finally {
+            readLock.unlock();
         }
         return null;
+    }
+
+    //Map currently not cleaned
+    @Synchronized
+    private ReadWriteLock getFileLock(String filePath) {
+        if (fileAccessHashMap.containsKey(filePath)) {
+            return fileAccessHashMap.get(filePath);
+        }
+
+        ReadWriteLock lock = new ReentrantReadWriteLock();
+        fileAccessHashMap.put(filePath, lock);
+        return lock;
     }
 
     public String listFilesInDirectory(File folder, int indents) throws IOException{

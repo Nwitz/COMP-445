@@ -93,43 +93,59 @@ public class HttpRequestHandler {
         ServerSocket socket = new ServerSocket();
         socket.bind(bindAddress, 10);
 
-        Socket caller = socket.accept();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(caller.getInputStream()));
-        PrintWriter out = new PrintWriter(caller.getOutputStream());
-
-        // Read incoming request
-        StringBuilder sb = new StringBuilder();
-        int data;
-        do {
-            data = reader.read();
-            sb.append((char) data);
-        } while (reader.ready());
-
-        HttpRequest request = null;
-        HttpResponse response = null;
-
-        try {
-            request = new HttpRequest(sb.toString());
-        } catch (InvalidRequestException e) {
-            System.out.println("Received an invalid HttpRequest.");
-            response = new HttpResponse(HttpStatusCode.BadRequest);
+        while(true) {
+            Socket caller = socket.accept();
+            Thread processRequestTask = new ProcessRequestTask(caller, callback);
+            processRequestTask.start();
         }
 
-        // TODO: Send HttpRequest in callback
-        // TODO: Callback should return HttpResponse
-        // TODO: Send HttpResponse to outputStream & close everything
+    }
 
-        response = callback.onRequestReceived(request);
+    private static class ProcessRequestTask extends Thread{
+        private Socket caller;
+        private IRequestCallback callback;
+        public ProcessRequestTask(Socket socket, IRequestCallback callback) {
+            caller = socket;
+            this.callback = callback;
+        }
 
-        // Send default answer
-        if(response == null)
-            response = new HttpResponse(HttpStatusCode.OK);
+        public void run() {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(caller.getInputStream()));
+                PrintWriter out = new PrintWriter(caller.getOutputStream());
 
-        out.write(response.toString());
-        out.flush();
+                // Read incoming request
+                StringBuilder sb = new StringBuilder();
+                int data;
+                do {
+                    data = reader.read();
+                    sb.append((char) data);
+                } while (reader.ready());
 
-        out.close();
-        reader.close();
-        socket.close();
+                HttpRequest request = null;
+                HttpResponse response = null;
+
+                try {
+                    request = new HttpRequest(sb.toString());
+                } catch (InvalidRequestException e) {
+                    System.out.println("Received an invalid HttpRequest.");
+                    response = new HttpResponse(HttpStatusCode.BadRequest);
+                }
+
+                response = callback.onRequestReceived(request);
+
+                // Send default answer
+                if (response == null)
+                    response = new HttpResponse(HttpStatusCode.OK);
+
+                out.write(response.toString());
+                out.flush();
+
+                out.close();
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
