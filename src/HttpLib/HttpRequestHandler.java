@@ -129,14 +129,19 @@ public class HttpRequestHandler {
                     request = new HttpRequest(sb.toString());
                 } catch (InvalidRequestException e) {
                     System.out.println("Received an invalid HttpRequest.");
+                    System.out.println(e.getMessage());
+                    System.out.println();
+                    System.out.println(sb.toString());
                     response = new HttpResponse(HttpStatusCode.BadRequest);
+
+                    out.write(response.toString());
+                    out.flush();
+                    out.close();
+                    reader.close();
+                    return;
                 }
 
                 response = callback.onRequestReceived(request);
-
-                // Send default answer
-                if (response == null)
-                    response = new HttpResponse(HttpStatusCode.OK);
 
                 out.write(response.toString());
                 out.flush();
@@ -147,5 +152,6 @@ public class HttpRequestHandler {
                 e.printStackTrace();
             }
         }
+
     }
 }

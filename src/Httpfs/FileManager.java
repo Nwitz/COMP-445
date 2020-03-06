@@ -14,7 +14,6 @@ public class FileManager {
     HashMap<String, ReadWriteLock> fileAccessHashMap = new HashMap<String, ReadWriteLock>();
 
 
-
     FileManager(Path directory) {
         this.directory = directory;
     }
@@ -58,10 +57,6 @@ public class FileManager {
     }
 
     public String readFile(String path) throws IOException {
-        if (path.equals("/")) {
-            return listFilesInDirectory(new File(directory.toString()), 0);
-        }
-
         path = directory.toString() + path;
         File file = new File(path);
         ReadWriteLock lock = getFileLock(path);
