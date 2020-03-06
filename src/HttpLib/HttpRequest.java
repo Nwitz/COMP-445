@@ -50,7 +50,7 @@ public class HttpRequest {
             throw new InvalidRequestException("Http request not well formatted.");
 
         try {
-            Pattern headerReg = Pattern.compile("(\\/+\\w*)+");
+            Pattern headerReg = Pattern.compile("^(/+[\\w+_]*)+(\\w(.\\w+)?)?$");
             Matcher regMatcher = headerReg.matcher(requestLine[1]);
             if(!regMatcher.matches())
                 throw new MalformedURLException("URL route should be relative.");
