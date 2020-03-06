@@ -68,7 +68,7 @@ public class Httpfs implements Runnable {
                 fileManager.writeToFile(request.getUrl().getPath(), request.getBody().toString());
                 httpResponse = new HttpResponse(HttpStatusCode.OK);
             } catch (IOException e) {
-                httpResponse = new HttpResponse(HttpStatusCode.Unauthorized);
+                httpResponse = new HttpResponse(HttpStatusCode.NotFound);
                 System.out.println("onRequestReceived");
                 e.printStackTrace();
             }
