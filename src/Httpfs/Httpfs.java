@@ -49,8 +49,10 @@ public class Httpfs implements Runnable {
     public void run() {
         if (directory == null || Files.notExists(directory) || !Files.isDirectory(directory)) {
             directory = Paths.get("").toAbsolutePath();
-            System.out.println("No valid directory given. Will serve files located at " + directory);
+            System.out.println("No valid directory given.");
         }
+
+        System.out.println("Will serve files located at " + directory);
         fileManager = new FileManager(directory);
 
         HttpRequestHandler handler = new HttpRequestHandler();
@@ -100,6 +102,14 @@ public class Httpfs implements Runnable {
                 e.printStackTrace();
             }
         }
+
+
+        if(verbose){
+            System.out.println("Will respond with:");
+            System.out.println();
+            System.out.println(httpResponse);
+        }
+
         return httpResponse;
     };
 
