@@ -14,28 +14,8 @@ public class FileManager {
     HashMap<String, ReadWriteLock> fileAccessHashMap = new HashMap<String, ReadWriteLock>();
 
 
-
     FileManager(Path directory) {
         this.directory = directory;
-    }
-
-    /**
-     * Ensure path is within directory
-     */
-    public boolean isFilePathValid(String path){
-        String[] pathNodes = path.split("\r");
-        int movement = 0;
-        for (String node : pathNodes) {
-            if (node.equals("..")) {
-                movement--;
-            } else {
-                movement++;
-            }
-            if (movement < 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public void writeToFile(String path, String body) throws IOException {
@@ -51,17 +31,12 @@ public class FileManager {
             BufferedWriter writer = new BufferedWriter(new FileWriter(path));
             writer.write(body);
             writer.close();
-        }
-        finally {
+        } finally {
             writeLock.unlock();
         }
     }
 
     public String readFile(String path) throws IOException {
-        if (path.equals("/")) {
-            return listFilesInDirectory(new File(directory.toString()), 0);
-        }
-
         path = directory.toString() + path;
         File file = new File(path);
         ReadWriteLock lock = getFileLock(path);
@@ -98,15 +73,14 @@ public class FileManager {
         return lock;
     }
 
-    public String listFilesInDirectory(File folder, int indents) throws IOException{
+    public String listFilesInDirectory(File folder, int indents) throws IOException {
         StringBuilder sb = new StringBuilder();
-        for (final File fileEntry : folder.listFiles()){
+        for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 sb.append("\t".repeat(Math.max(0, indents)));
                 sb.append(fileEntry.getName()).append("\n");
                 sb.append(listFilesInDirectory(fileEntry, indents + 1));
-            }
-            else {
+            } else {
                 sb.append("\t".repeat(Math.max(0, indents)));
                 sb.append(fileEntry.getName()).append("\n");
             }

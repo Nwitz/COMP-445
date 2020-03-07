@@ -1,11 +1,11 @@
 package Httpfs;
 
 import HttpLib.*;
-import org.w3c.dom.html.HTMLTableCaptionElement;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +47,7 @@ public class Httpfs implements Runnable {
      * Command execution
      */
     public void run() {
-        if (directory == null || Files.notExists(directory)){
+        if (directory == null || Files.notExists(directory) || !Files.isDirectory(directory)) {
             directory = Paths.get("").toAbsolutePath();
             System.out.println("No valid directory given. Will serve files located at " + directory);
         }
@@ -74,8 +74,20 @@ public class Httpfs implements Runnable {
             }
         } else if (request.getRequestMethod().equals(HttpRequestMethod.GET)) {
             try {
-                String responseBody;
-                responseBody = fileManager.readFile(request.getUrl().getPath());
+                String responseBody = null;
+                Path path = Paths.get(fileManager.directory.toString(), request.getUrl().getPath());
+
+                System.out.println("Got queried for: " + path.toString());
+
+                // Check what type of information to retrieve
+                if (!Files.exists(path)) {
+                    httpResponse = new HttpResponse(HttpStatusCode.NotFound);
+                } else if (Files.isDirectory(path)) {
+                    responseBody = fileManager.listFilesInDirectory(new File(path.toAbsolutePath().toString()), 0);
+                } else {
+                    responseBody = fileManager.readFile(request.getUrl().getPath());
+                }
+
                 if (responseBody == null) {
                     httpResponse = new HttpResponse(HttpStatusCode.NotFound);
                 } else {
@@ -93,7 +105,6 @@ public class Httpfs implements Runnable {
 
     public static void main(String[] args) {
         // Bootstrap entire app
-//        Httpfs httpfs = new Httpfs();
         System.exit(new CommandLine(new Httpfs()).execute(args));
     }
 
