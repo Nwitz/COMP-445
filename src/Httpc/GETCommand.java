@@ -34,7 +34,7 @@ public class GETCommand implements Runnable {
         HttpRequest request = new HttpRequest(url, HttpRequestMethod.GET, header);
         HttpResponse response = null;
         try {
-            response = new HttpRequestHandler().send(request);
+            response = new HttpRequestHandler(defaultOptions.getProtocol()).send(request);
         } catch (Exception e) {
             Httpc.printHelpAndExit(this, e.getMessage());
         }

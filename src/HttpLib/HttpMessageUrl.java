@@ -36,7 +36,7 @@ public class HttpMessageUrl {
         return _url.getPath();
     }
 
-    String getHost() {
+    public String getHost() {
         return _url.getHost();
     }
 }

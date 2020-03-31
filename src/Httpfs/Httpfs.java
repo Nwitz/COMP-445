@@ -1,6 +1,9 @@
 package Httpfs;
 
 import HttpLib.*;
+import HttpLib.protocol.Protocol;
+import HttpLib.protocol.TCP;
+import HttpLib.protocol.UDP;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -18,6 +21,7 @@ public class Httpfs implements Runnable {
     private int _port = 8080;
     // TODO: remove
     private FileManager fileManager;
+    private Protocol protocol;
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
@@ -43,6 +47,11 @@ public class Httpfs implements Runnable {
         }
     }
 
+    @Option(names = {"-u", "--udp"},
+        description = "Specifies UDP protocol is to be used for communication\n" +
+                "TCP is used by default")
+    boolean useUDP;
+
     /**
      * Command execution
      */
@@ -55,7 +64,13 @@ public class Httpfs implements Runnable {
         System.out.println("Will serve files located at " + directory);
         fileManager = new FileManager(directory);
 
-        HttpRequestHandler handler = new HttpRequestHandler();
+        if (useUDP) {
+            protocol = new UDP();
+        } else {
+            protocol = new TCP();
+        }
+
+        HttpRequestHandler handler = new HttpRequestHandler(protocol);
         try {
             handler.listen(_port, callback);
         } catch (IOException e) {

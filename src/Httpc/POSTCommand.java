@@ -2,14 +2,16 @@ package Httpc;
 
 import HttpLib.*;
 import picocli.CommandLine;
-
-import java.io.*;
-import java.net.URL;
-import java.util.Map;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Map;
 
 
 @Command(name = "post", description = "executes a HTTP POST request for a given URL with inline data or from file.")
@@ -72,7 +74,7 @@ public class POSTCommand implements Runnable {
         HttpRequest request = new HttpRequest(url, HttpRequestMethod.POST, header, body);
         HttpResponse response = null;
         try {
-            response = new HttpRequestHandler().send(request);
+            response = new HttpRequestHandler(defaultOptions.getProtocol()).send(request);
         } catch (Exception e) {
             Httpc.printHelpAndExit(this, e.getMessage());
         }

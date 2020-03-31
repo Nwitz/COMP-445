@@ -1,5 +1,8 @@
 package Httpc;
 
+import HttpLib.protocol.Protocol;
+import HttpLib.protocol.TCP;
+import HttpLib.protocol.UDP;
 import picocli.CommandLine.Option;
 
 import java.io.BufferedWriter;
@@ -16,6 +19,18 @@ public class CommandMixins {
 
         @Option(names = {"-o", "--output"})
         File outputFile;
+
+        @Option(names = {"-u", "--udp"},
+                description = "Specifies UDP protocol is to be used for communication\n" +
+                        "TCP is used by default")
+        boolean useUDP;
+
+        public Protocol getProtocol() {
+            if (useUDP)
+                return new UDP();
+            else
+                return new TCP();
+        }
 
         public void SaveToFile(String content) throws IOException {
             if (outputFile != null) {
