@@ -1,0 +1,44 @@
+1. convert httpRequestHandler to take protocol using strategy pattern
+
+2. move existing logic to TCP protocol
+
+3. create udp protocol accessories
+    3a. create UdpPacket class ->
+        note: maybe DatagramPacket instead
+              or simply serialize UdpPacket into buffer, and create to DatagramPacket(buffer, buffer.length)
+        enum            packetType
+        unsigned int    sequenceNumber 4b big-endian
+        4 bytes         peerAddress
+        unsigned short  peerPort       2b big-endian
+        byte-buffer     payload        0 -1013 bytes
+        checksum? - not mentioned in assignment
+        quick packet creation for response (address, port, ack/nack)
+    3b. create UdeMessage class ->
+        receives message as string or bytearray
+        receives destination address, port, sequence range
+        converts message to bytes
+        chops message into 1013 byte sections
+        creates UdpPack for each section of message, assigning correct sequence number and packet info
+        getPackets method return list of packets in order.
+
+4. create udp protocol
+    https://docs.oracle.com/javase/7/docs/api/java/net/DatagramSocket.html#receive(java.net.DatagramPacket)
+    4a. send
+        convert string to UdpMessage
+        get udpPackets
+        open datagramSocket
+        send, set timeout
+        manage sequence and window
+        open socket to receive acks/nacks - might need to have threads to handle multiple
+
+    4b. receive
+        open socket
+        wait for read
+        on read - create thread here?
+        send ack/nack
+        add packet to list in sequence
+        continue until non-full packet, or end packet (empty packet)
+
+
+
+
