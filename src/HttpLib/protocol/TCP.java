@@ -13,7 +13,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class TCP implements Protocol {
+public class TCP implements IProtocol {
     @Override
     public String send(HttpRequest request, int port) throws InvalidRequestException, InvalidResponseException, IOException {
         // Open Socket

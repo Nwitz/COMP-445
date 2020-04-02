@@ -1,6 +1,6 @@
 package Httpc;
 
-import HttpLib.protocol.Protocol;
+import HttpLib.protocol.IProtocol;
 import HttpLib.protocol.TCP;
 import HttpLib.protocol.UDP;
 import picocli.CommandLine.Option;
@@ -25,7 +25,7 @@ public class CommandMixins {
                         "TCP is used by default")
         boolean useUDP;
 
-        public Protocol getProtocol() {
+        public IProtocol getProtocol() {
             if (useUDP)
                 return new UDP();
             else

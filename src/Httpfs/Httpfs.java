@@ -1,7 +1,7 @@
 package Httpfs;
 
 import HttpLib.*;
-import HttpLib.protocol.Protocol;
+import HttpLib.protocol.IProtocol;
 import HttpLib.protocol.TCP;
 import HttpLib.protocol.UDP;
 import picocli.CommandLine;
@@ -21,7 +21,7 @@ public class Httpfs implements Runnable {
     private int _port = 8080;
     // TODO: remove
     private FileManager fileManager;
-    private Protocol protocol;
+    private IProtocol protocol;
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;

@@ -1,17 +1,13 @@
 package HttpLib;
 
 
-import java.io.*;
-import java.net.*;
-
 import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.Exceptions.InvalidResponseException;
-import HttpLib.protocol.Protocol;
+import HttpLib.protocol.IProtocol;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Handler to ease sending and receiving HTTP Requests & Responses.
@@ -21,9 +17,9 @@ public class HttpRequestHandler {
 
     private final int PORT = 80;
     private int nb_redirect = 0;
-    private Protocol protocol;
+    private IProtocol protocol;
 
-    public HttpRequestHandler(Protocol protocol) {
+    public HttpRequestHandler(IProtocol protocol) {
         this.protocol = protocol;
     }
 

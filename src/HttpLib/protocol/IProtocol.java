@@ -7,7 +7,7 @@ import HttpLib.IRequestCallback;
 
 import java.io.IOException;
 
-public interface Protocol {
+public interface IProtocol {
 
     public String send(HttpRequest httpRequest, int port) throws InvalidRequestException, InvalidResponseException, IOException;
 
