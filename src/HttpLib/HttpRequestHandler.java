@@ -1,16 +1,13 @@
 package HttpLib;
 
 
-import java.io.*;
-import java.net.*;
-
 import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.Exceptions.InvalidResponseException;
+import HttpLib.protocol.IProtocol;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Handler to ease sending and receiving HTTP Requests & Responses.
@@ -20,8 +17,10 @@ public class HttpRequestHandler {
 
     private final int PORT = 80;
     private int nb_redirect = 0;
+    private IProtocol protocol;
 
-    public HttpRequestHandler() {
+    public HttpRequestHandler(IProtocol protocol) {
+        this.protocol = protocol;
     }
 
     /**
@@ -37,30 +36,9 @@ public class HttpRequestHandler {
         if (!request.isValid())
             throw new InvalidRequestException();
 
-        // Open Socket
-        InetAddress addressIp = InetAddress.getByName(request.url.getHost());
-        Socket socket = new Socket(addressIp, PORT);
+        String res = protocol.send(request, PORT);
 
-        PrintWriter out = new PrintWriter(socket.getOutputStream());
-        InputStream in = socket.getInputStream();
-
-        // Send request
-        out.write(request.toString());
-        out.flush();
-
-        // Read entire answer
-        StringBuilder res = new StringBuilder();
-        int data = in.read();
-        while (data != -1) {
-            res.append((char) data);
-            data = in.read();
-        }
-
-        out.close();
-        in.close();
-        socket.close();
-
-        HttpResponse response = new HttpResponse(res.toString());
+        HttpResponse response = new HttpResponse(res);
         // Recurse for redirection, max 5 times
         if (response.statusCode.getValue() > 300 && response.statusCode.getValue() < 400) {
             if(nb_redirect < 5){
@@ -89,69 +67,8 @@ public class HttpRequestHandler {
      * @throws IOException
      */
     public void listen(int port, IRequestCallback callback) throws IOException {
-        InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
-        ServerSocket socket = new ServerSocket();
-        socket.bind(bindAddress, 10);
-
-        while(true) {
-            Socket caller = socket.accept();
-            Thread processRequestTask = new ProcessRequestTask(caller, callback);
-            processRequestTask.start();
-        }
-
+        protocol.listen(port, callback);
     }
 
-    private static class ProcessRequestTask extends Thread{
-        private Socket caller;
-        private IRequestCallback callback;
-        public ProcessRequestTask(Socket socket, IRequestCallback callback) {
-            caller = socket;
-            this.callback = callback;
-        }
 
-        public void run() {
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(caller.getInputStream()));
-                PrintWriter out = new PrintWriter(caller.getOutputStream());
-
-                // Read incoming request
-                StringBuilder sb = new StringBuilder();
-                int data;
-                do {
-                    data = reader.read();
-                    sb.append((char) data);
-                } while (reader.ready());
-
-                HttpRequest request = null;
-                HttpResponse response = null;
-
-                try {
-                    request = new HttpRequest(sb.toString());
-                } catch (InvalidRequestException e) {
-                    System.out.println("Received an invalid HttpRequest.");
-                    System.out.println(e.getMessage());
-                    System.out.println();
-                    System.out.println(sb.toString());
-                    response = new HttpResponse(HttpStatusCode.BadRequest);
-
-                    out.write(response.toString());
-                    out.flush();
-                    out.close();
-                    reader.close();
-                    return;
-                }
-
-                response = callback.onRequestReceived(request);
-
-                out.write(response.toString());
-                out.flush();
-
-                out.close();
-                reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
 }
