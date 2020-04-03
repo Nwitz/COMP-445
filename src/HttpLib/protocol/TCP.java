@@ -1,7 +1,6 @@
 package HttpLib.protocol;
 
 import HttpLib.Exceptions.InvalidRequestException;
-import HttpLib.Exceptions.InvalidResponseException;
 import HttpLib.HttpRequest;
 import HttpLib.HttpResponse;
 import HttpLib.HttpStatusCode;
@@ -15,7 +14,7 @@ import java.net.Socket;
 
 public class TCP implements IProtocol {
     @Override
-    public String send(HttpRequest request, int port) throws InvalidRequestException, InvalidResponseException, IOException {
+    public String send(HttpRequest request, int port) throws IOException {
         // Open Socket
         InetAddress addressIp = InetAddress.getByName(request.getUrl().getHost());
         Socket socket = new Socket(addressIp, port);
@@ -55,7 +54,7 @@ public class TCP implements IProtocol {
         }
     }
 
-    private static class ProcessRequestTask extends Thread{
+    private static class ProcessRequestTask extends Thread {
         private Socket caller;
         private IRequestCallback callback;
         public ProcessRequestTask(Socket socket, IRequestCallback callback) {
