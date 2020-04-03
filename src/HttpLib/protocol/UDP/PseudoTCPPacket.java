@@ -4,7 +4,6 @@ import HttpLib.ByteArrayUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 public class PseudoTCPPacket {
@@ -20,8 +19,12 @@ public class PseudoTCPPacket {
         _payload = payload;
         _type = type;
     }
-    
-    public void seSequenceNumber(int sequenceNumber) {
+
+    public PseudoTCPPacket(byte[] peerAddress, byte[] peerPort, PacketType type) {
+        this(peerAddress, peerPort, new byte[0], type);
+    }
+
+    public void setSequenceNumber(int sequenceNumber) {
         _sequenceNumber = sequenceNumber;
     }
 
@@ -35,6 +38,7 @@ public class PseudoTCPPacket {
         return outputStream.toByteArray();
     }
 
+    // helper method for quick payload extraction without caring about other content of packet.
     public static byte[] extractPayload(byte[] packet) {
         if (packet.length < 11) {
             return new byte[0];

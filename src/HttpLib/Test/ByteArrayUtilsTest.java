@@ -15,22 +15,23 @@ public class ByteArrayUtilsTest {
         bytes = ByteArrayUtils.stringIPToBytes(s);
 
         // Assert
-        for (byte b: bytes) {
-            System.out.println(b & 0xff);
-        }
+        assert((bytes[0] & 0xff) == 192);
+        assert((bytes[1] & 0xff) == 168);
+        assert((bytes[2] & 0xff) == 2);
+        assert((bytes[3] & 0xff) == 10);
     }
 
     @Test
-    public void testShortToBytes(){
+    public void testShortToBytes() {
         // Arrange
-        short s = 3000;
-        short s2 = (short) (s - Short.MAX_VALUE);
+        int x = 41830;
         byte[] bytes;
+
         // Act
-        bytes = ByteArrayUtils.shortToBytes(s2);
+        bytes = ByteArrayUtils.intToBytes(x);
 
         // Assert
-        System.out.println(bytes[0] & 0xff);
-        System.out.println(bytes[1] & 0xff);
+        assert ((bytes[2] & 0xff) == 163);
+        assert ((bytes[3] & 0xff) == 102);
     }
 }

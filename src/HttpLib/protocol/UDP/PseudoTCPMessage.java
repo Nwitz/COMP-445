@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PseudoTCPMessage {
-    private byte[] _peerAddress;
-    private byte[] _peerPort;
+    private String _peerAddress;
+    private int _peerPort;
+    private byte[] _peerAddressBytes;
+    private byte[] _peerPortBytes;
     private byte[] _payload;
     private ArrayList<PseudoTCPPacket> _packets;
 
@@ -17,9 +19,13 @@ public class PseudoTCPMessage {
      * @param peerPort positive short
      * @param payload byte array of payload
      */
-    public PseudoTCPMessage(String peerAddress, short peerPort, byte[] payload) {
-        _peerPort = ByteArrayUtils.shortToBytes(peerPort);
-        _peerAddress = ByteArrayUtils.stringIPToBytes(peerAddress);
+    public PseudoTCPMessage(String peerAddress, int peerPort, byte[] payload) {
+        _peerAddress = peerAddress;
+        _peerPort = peerPort;
+
+        byte[] port = ByteArrayUtils.intToBytes(peerPort);
+        _peerPortBytes = Arrays.copyOfRange(port, 2,4); // take two least significant bytes of port integer.
+        _peerAddressBytes = ByteArrayUtils.stringIPToBytes(peerAddress);
         _payload = payload;
         createPackets();
     }
@@ -40,8 +46,12 @@ public class PseudoTCPMessage {
             bytes = Arrays.copyOfRange(_payload, index, end);
             index = end;
 
-            _packets.add(new PseudoTCPPacket(_peerAddress, _peerPort, bytes, PacketType.DATA));
+            _packets.add(new PseudoTCPPacket(_peerAddressBytes, _peerPortBytes, bytes, PacketType.DATA));
         }
+    }
+
+    public PseudoTCPPacket[] getPackets() {
+        return _packets.toArray(new PseudoTCPPacket[_packets.size()]);
     }
 
 
