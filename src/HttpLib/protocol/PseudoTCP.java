@@ -7,7 +7,7 @@ import HttpLib.IRequestCallback;
 
 import java.io.IOException;
 
-public class UDP implements IProtocol {
+public class PseudoTCP implements IProtocol {
 
     @Override
     public String send(HttpRequest httpRequest, int port) throws InvalidRequestException, InvalidResponseException, IOException {

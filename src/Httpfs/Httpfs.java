@@ -3,7 +3,7 @@ package Httpfs;
 import HttpLib.*;
 import HttpLib.protocol.IProtocol;
 import HttpLib.protocol.TCP;
-import HttpLib.protocol.UDP;
+import HttpLib.protocol.PseudoTCP;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -65,7 +65,7 @@ public class Httpfs implements Runnable {
         fileManager = new FileManager(directory);
 
         if (useUDP) {
-            protocol = new UDP();
+            protocol = new PseudoTCP();
         } else {
             protocol = new TCP();
         }
