@@ -2,7 +2,9 @@
 
 2. move existing logic to TCP protocol (Done)
 
-3. create udp protocol accessories
+3. create PseudoTCP protocol
+    https://docs.oracle.com/javase/7/docs/api/java/net/DatagramSocket.html#receive(java.net.DatagramPacket)
+
     3a. create UdpPacket class ->
         note: maybe DatagramPacket instead
               or simply serialize UdpPacket into buffer, and create to DatagramPacket(buffer, buffer.length)
@@ -12,32 +14,26 @@
         unsigned short  peerPort       2b big-endian
         byte-buffer     payload        0 -1013 bytes
         checksum? - not mentioned in assignment
-        quick packet creation for response (address, port, ack/nack)
-    3b. create UdeMessage class ->
+        quick packet creation for response (address, port, ACK/SYN/SYN-ACK...)
+
+    3b. create UdpMessage class ->
+        **(Driven by ReliableConnection)
         receives message as string or bytearray
-        receives destination address, port, sequence range
+        receives destination address, port
         converts message to bytes
         chops message into 1013 byte sections
-        creates UdpPack for each section of message, assigning correct sequence number and packet info
+        creates UdpPack for each section of message, assigning correct sequence number (Given by ReliableConnection) and packet info
         getPackets method return list of packets in order.
 
-4. create udp protocol
-    https://docs.oracle.com/javase/7/docs/api/java/net/DatagramSocket.html#receive(java.net.DatagramPacket)
-    4a. send
-        convert string to UdpMessage
-        get udpPackets
-        open datagramSocket
-        send, set timeout
-        manage sequence and window
-        open socket to receive acks/nacks - might need to have threads to handle multiple
+    3c. Create ReliableConnection class for establishing connection with handshaking over UDP ->
+        receives: address, port
+        run handshaking with peer and sync sequence number registry
+        **Handles handshaking timeout & retry internally
+        When connected, allow for receiving message
+        send(message) should internally create a UdpMessage, and send all packets over reliable connection.
+        provide some key events (ie: termination event, etc)
 
-    4b. receive
-        open socket
-        wait for read
-        on read - create thread here?
-        send ack/nack
-        add packet to list in sequence
-        continue until non-full packet, or end packet (empty packet)
+        TODO: List todos for receiver side too.
 
 
 
