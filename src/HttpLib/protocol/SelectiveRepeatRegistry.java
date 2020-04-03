@@ -104,7 +104,7 @@ class SelectiveRepeatRegistry {
                 // Finding new base
                 while (_base != _next && _seq[_base] == SlotState.Released) {
                     _seq[_base] = SlotState.Free;
-                    _base = wrapIndex(_base + 1);
+                    _base = unsignedWrap(_base + 1);
                 }
 
                 notify = true;
@@ -142,7 +142,7 @@ class SelectiveRepeatRegistry {
 
         int next = _next;
         _seq[next] = SlotState.Requested;
-        _next = wrapIndex(_next + 1);
+        _next = unsignedWrap(_next + 1);
 
         return next;
     }
@@ -154,16 +154,18 @@ class SelectiveRepeatRegistry {
      * @return If the index is considered in current active window in the sequence.
      */
     public synchronized boolean inWindow(int v) {
-        int end = wrapIndex(_base + _windowSize);
+        int end = unsignedWrap(_base + _windowSize);
         if (_base <= end)
             return (_base <= v && v < end);
         else
-            return (0 <= v && v < end) || (_base <= v && v < _seq.length);
+            return (0 <= v && v < end) || (_base <= v);
     }
 
-    private int wrapIndex(int v) {
-        while (v < 0) v += _seq.length;
-        while (v > _seq.length - 1) v -= _seq.length;
+    private int unsignedWrap(int v) {
+        if(v < 0){
+            v += Integer.MAX_VALUE;
+            v++;
+        }
         return v;
     }
 
