@@ -1,6 +1,6 @@
-1. convert httpRequestHandler to take protocol using strategy pattern
+1. convert httpRequestHandler to take protocol using strategy pattern (Done)
 
-2. move existing logic to TCP protocol
+2. move existing logic to TCP protocol (Done)
 
 3. create udp protocol accessories
     3a. create UdpPacket class ->
