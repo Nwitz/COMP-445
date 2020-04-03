@@ -1,12 +1,11 @@
 package HttpLib.protocol;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 
 class SelectiveRepeatRegistry {
 
-    public enum SlotState {
-        Free,
+    enum SlotState {
         Released,
         Requested
     }
@@ -14,7 +13,8 @@ class SelectiveRepeatRegistry {
     private ArrayList<IPacketEventListener> _listeners = new ArrayList<IPacketEventListener>();
     private int _windowSize;
 
-    private SlotState[] _seq;
+    // Active sequence window storage
+    private HashMap<Integer, SlotState> _seq = new HashMap<>();
     private int _base = 0;
     private int _next = 0;
 
@@ -24,23 +24,20 @@ class SelectiveRepeatRegistry {
     }
 
     public SelectiveRepeatRegistry(int windowSize) {
-        if(windowSize < 0 || windowSize > Integer.MAX_VALUE / 2)
+        if (windowSize < 0 || windowSize > Integer.MAX_VALUE / 2)
             throw new IllegalArgumentException("WindowSize needs to be in range [0," + (Integer.MAX_VALUE / 2) + "].");
 
         _windowSize = windowSize;
-
-        // TODO: Saving state in array is very stupid here...
-        _seq = new SlotState[_windowSize * 2];
-        Arrays.fill(_seq, SlotState.Free);
     }
 
     /**
      * Change window size
      * WARNING: This reset the sequence states and previously requested IDs should be invalided.
+     *
      * @param size New sequence windows size to use [0,Integer.MAX_VALUE / 2]
      */
-    public void setWindowSize(int size){
-        if(size < 0 || size > Integer.MAX_VALUE / 2)
+    public void setWindowSize(int size) {
+        if (size < 0 || size > Integer.MAX_VALUE / 2)
             throw new IllegalArgumentException("WindowSize needs to be in range [0," + (Integer.MAX_VALUE / 2) + "].");
 
         _windowSize = size;
@@ -64,16 +61,17 @@ class SelectiveRepeatRegistry {
     /**
      * Changes the active window base. Reset states of previously requested numbers.
      * WARNING: This reset the sequence states and previously requested IDs should be invalided.
+     *
      * @param newBase New window base to sync to [0,Integer.MAX_VALUE]
      */
-    public void sync(int newBase){
+    public void sync(int newBase) {
         if (newBase < 0)
             throw new IllegalArgumentException("Invalid sequence base sync.");
 
         // Reset at given base
         _base = newBase;
         _next = _base;
-        Arrays.fill(_seq, SlotState.Free);
+        _seq = new HashMap<>();
 
         // Notify observers
         for (IPacketEventListener listener : _listeners) {
@@ -93,17 +91,17 @@ class SelectiveRepeatRegistry {
         synchronized (this) {
             if (!inWindow(i)) return false;
 
-            if (_seq[i] != SlotState.Requested)
+            if (_seq.get(i) != SlotState.Requested)
                 return false;
 
-            // Marking
-            _seq[i] = SlotState.Released;
+            // Mark for cleaning
+            _seq.put(i, SlotState.Released);
 
             // Clearing trail for next cycle
             if (i == _base) {
                 // Finding new base
-                while (_base != _next && _seq[_base] == SlotState.Released) {
-                    _seq[_base] = SlotState.Free;
+                while (_base != _next && _seq.get(_base) == SlotState.Released) {
+                    _seq.remove(_base);
                     _base = unsignedWrap(_base + 1);
                 }
 
@@ -135,13 +133,13 @@ class SelectiveRepeatRegistry {
     /**
      * Try to get the next sequence number ready to be used.
      *
-     * @return The sequence number if it was available, -1 otherwise
+     * @return The unsigned sequence number if available, -1 otherwise.
      */
     public synchronized int requestNext() {
         if (!available()) return -1;
 
         int next = _next;
-        _seq[next] = SlotState.Requested;
+        _seq.put(next, SlotState.Requested);
         _next = unsignedWrap(_next + 1);
 
         return next;
@@ -162,7 +160,7 @@ class SelectiveRepeatRegistry {
     }
 
     private int unsignedWrap(int v) {
-        if(v < 0){
+        if (v < 0) {
             v += Integer.MAX_VALUE;
             v++;
         }

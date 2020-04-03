@@ -9,7 +9,7 @@ class SelectiveRepeatRegistryTest {
     @org.junit.jupiter.api.Test
     void threadSafe() throws InterruptedException {
         // Not robust, simply a general check to ensure that nothing blocks within a given time...
-        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 10);
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry(10);
 
         // Test threads
         Runnable testSRR = () -> {
@@ -64,7 +64,7 @@ class SelectiveRepeatRegistryTest {
 
     @org.junit.jupiter.api.Test
     void availableCases() {
-        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 4);
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry(4);
 
         // Basic
         assertTrue(sr.available());
@@ -72,7 +72,7 @@ class SelectiveRepeatRegistryTest {
 
     @org.junit.jupiter.api.Test
     void requestNextSeqNumber() {
-        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 2);
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry(2);
 
         assertTrue(sr.requestNext() == 0);
         assertTrue(sr.requestNext() == 1);
@@ -80,8 +80,16 @@ class SelectiveRepeatRegistryTest {
     }
 
     @org.junit.jupiter.api.Test
+    void sync() {
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry();
+        sr.sync(45812);
+
+        assertTrue(sr.getBase() == 45812);
+    }
+
+    @org.junit.jupiter.api.Test
     void inWindowBasic() {
-        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 2);
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry(2);
 
         assertTrue(sr.inWindow(0));
         assertTrue(sr.inWindow(1));
@@ -93,7 +101,7 @@ class SelectiveRepeatRegistryTest {
     @org.junit.jupiter.api.Test
     void inWindowAfterMove() {
         System.out.println(Integer.MAX_VALUE);
-        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 4);
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry(4);
 
         // Move 2
         for (int i = 0; i < 2; i++)
@@ -107,16 +115,13 @@ class SelectiveRepeatRegistryTest {
 
     @org.junit.jupiter.api.Test
     void inWindowCycling() {
-        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 2);
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry(2);
+        sr.sync(Integer.MAX_VALUE);
 
-        // Move 3
-        for (int i = 0; i < 3; i++)
-            sr.release(sr.requestNext());
-
+        assertTrue(sr.inWindow(Integer.MAX_VALUE));
         assertTrue(sr.inWindow(0));
-        assertTrue(sr.inWindow(3));
         assertFalse(sr.inWindow(-1));
-        assertFalse(sr.inWindow(5));
+        assertFalse(sr.inWindow(Integer.MAX_VALUE-1));
         assertFalse(sr.inWindow(1));
         assertFalse(sr.inWindow(2));
     }
