@@ -26,6 +26,8 @@
         getPackets method return list of packets in order.
 
     3c. Create ReliableConnection class for establishing connection with handshaking over UDP ->
+        https://www.guru99.com/tcp-3-way-handshake.html
+
         receives: address, port
         run handshaking with peer and sync sequence number registry
         **Handles handshaking timeout & retry internally
