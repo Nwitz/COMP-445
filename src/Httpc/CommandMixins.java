@@ -2,7 +2,7 @@ package Httpc;
 
 import HttpLib.protocol.IProtocol;
 import HttpLib.protocol.TCP;
-import HttpLib.protocol.UDP;
+import HttpLib.protocol.PseudoTCP;
 import picocli.CommandLine.Option;
 
 import java.io.BufferedWriter;
@@ -27,7 +27,7 @@ public class CommandMixins {
 
         public IProtocol getProtocol() {
             if (useUDP)
-                return new UDP();
+                return new PseudoTCP();
             else
                 return new TCP();
         }
