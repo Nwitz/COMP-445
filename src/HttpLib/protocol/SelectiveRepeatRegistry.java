@@ -12,22 +12,44 @@ class SelectiveRepeatRegistry {
     }
 
     private ArrayList<IPacketEventListener> _listeners = new ArrayList<IPacketEventListener>();
-    private short _windowSize;
+    private int _windowSize;
 
     private SlotState[] _seq;
     private int _base = 0;
     private int _next = 0;
 
-    public SelectiveRepeatRegistry(short windowSize) {
-        if (windowSize < 0)
-            throw new IllegalArgumentException("WindowSize needs to be positive.");
+    public SelectiveRepeatRegistry() {
+        // Based on TCP 32-bit sequence number convention
+        this(Integer.MAX_VALUE / 2);
+    }
+
+    public SelectiveRepeatRegistry(int windowSize) {
+        if(windowSize < 0 || windowSize > Integer.MAX_VALUE / 2)
+            throw new IllegalArgumentException("WindowSize needs to be in range [0," + (Integer.MAX_VALUE / 2) + "].");
 
         _windowSize = windowSize;
+
+        // TODO: Saving state in array is very stupid here...
         _seq = new SlotState[_windowSize * 2];
         Arrays.fill(_seq, SlotState.Free);
     }
 
-    public short getWindowSize() {
+    /**
+     * Change window size
+     * WARNING: This reset the sequence states and previously requested IDs should be invalided.
+     * @param size New sequence windows size to use [0,Integer.MAX_VALUE / 2]
+     */
+    public void setWindowSize(int size){
+        if(size < 0 || size > Integer.MAX_VALUE / 2)
+            throw new IllegalArgumentException("WindowSize needs to be in range [0," + (Integer.MAX_VALUE / 2) + "].");
+
+        _windowSize = size;
+
+        // Reset needed
+        sync(_base);
+    }
+
+    public int getWindowSize() {
         return _windowSize;
     }
 
@@ -40,8 +62,30 @@ class SelectiveRepeatRegistry {
     }
 
     /**
+     * Changes the active window base. Reset states of previously requested numbers.
+     * WARNING: This reset the sequence states and previously requested IDs should be invalided.
+     * @param newBase New window base to sync to [0,Integer.MAX_VALUE]
+     */
+    public void sync(int newBase){
+        if (newBase < 0)
+            throw new IllegalArgumentException("Invalid sequence base sync.");
+
+        // Reset at given base
+        _base = newBase;
+        _next = _base;
+        Arrays.fill(_seq, SlotState.Free);
+
+        // Notify observers
+        for (IPacketEventListener listener : _listeners) {
+            listener.onBaseSync(_base);
+        }
+    }
+
+    /**
+     * Given an sequence ID #, release it and update sequence's window accordingly.
+     *
      * @param i Sequence number (Index) to release
-     * @return
+     * @return Whether the release worked. False if invalid sequence number or number not previously requested.
      */
     public boolean release(int i) {
         boolean notify = false;

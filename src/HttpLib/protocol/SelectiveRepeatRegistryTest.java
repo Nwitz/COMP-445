@@ -92,6 +92,7 @@ class SelectiveRepeatRegistryTest {
 
     @org.junit.jupiter.api.Test
     void inWindowAfterMove() {
+        System.out.println(Integer.MAX_VALUE);
         SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 4);
 
         // Move 2
