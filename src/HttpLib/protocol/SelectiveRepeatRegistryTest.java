@@ -1,5 +1,7 @@
 package HttpLib.protocol;
+
 import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SelectiveRepeatRegistryTest {
@@ -15,8 +17,8 @@ class SelectiveRepeatRegistryTest {
             int count = 0;
             while (count < 4) {
 
-                while (!sr.canSend()) {
-                    System.out.println(Thread.currentThread()+" | Window full. Waiting for simulation...");
+                while (!sr.available()) {
+                    System.out.println(Thread.currentThread() + " | Window full. Waiting for simulation...");
                     try {
                         Thread.sleep(5);
                     } catch (InterruptedException e) {
@@ -25,8 +27,8 @@ class SelectiveRepeatRegistryTest {
                 }
 
                 // Query for next
-                int seqNumber = sr.requestNextSeqNumber();
-                System.out.println(Thread.currentThread()+" | Got number: " + seqNumber);
+                int seqNumber = sr.requestNext();
+                System.out.println(Thread.currentThread() + " | Got number: " + seqNumber);
 
                 // Simulate RTT
                 try {
@@ -36,7 +38,8 @@ class SelectiveRepeatRegistryTest {
                 }
 
                 // .. when we receive ack...
-                sr.confirm(seqNumber);
+                System.out.println("Confirming: " + seqNumber);
+                sr.release(seqNumber);
 
                 count++;
             }
@@ -60,14 +63,60 @@ class SelectiveRepeatRegistryTest {
     }
 
     @org.junit.jupiter.api.Test
-    void canSend() {
+    void availableCases() {
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 4);
+
+        // Basic
+        assertTrue(sr.available());
     }
 
     @org.junit.jupiter.api.Test
     void requestNextSeqNumber() {
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 2);
+
+        assertTrue(sr.requestNext() == 0);
+        assertTrue(sr.requestNext() == 1);
+        assertTrue(sr.requestNext() == -1); // Window is full, should return invalid (-1) number.
     }
 
     @org.junit.jupiter.api.Test
-    void inWindow() {
+    void inWindowBasic() {
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 2);
+
+        assertTrue(sr.inWindow(0));
+        assertTrue(sr.inWindow(1));
+        assertFalse(sr.inWindow(-1));
+        assertFalse(sr.inWindow(2));
+        assertFalse(sr.inWindow(7));
+    }
+
+    @org.junit.jupiter.api.Test
+    void inWindowAfterMove() {
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 4);
+
+        // Move 2
+        for (int i = 0; i < 2; i++)
+            sr.release(sr.requestNext());
+
+        assertTrue(sr.inWindow(2));
+        assertTrue(sr.inWindow(5));
+        assertFalse(sr.inWindow(1));
+        assertFalse(sr.inWindow(6));
+    }
+
+    @org.junit.jupiter.api.Test
+    void inWindowCycling() {
+        SelectiveRepeatRegistry sr = new SelectiveRepeatRegistry((short) 2);
+
+        // Move 3
+        for (int i = 0; i < 3; i++)
+            sr.release(sr.requestNext());
+
+        assertTrue(sr.inWindow(0));
+        assertTrue(sr.inWindow(3));
+        assertFalse(sr.inWindow(-1));
+        assertFalse(sr.inWindow(5));
+        assertFalse(sr.inWindow(1));
+        assertFalse(sr.inWindow(2));
     }
 }
