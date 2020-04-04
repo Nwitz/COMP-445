@@ -3,7 +3,6 @@ package HttpLib.protocol.UDP;
 import HttpLib.ByteArrayUtils;
 
 import java.net.DatagramSocket;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -88,6 +87,7 @@ class PacketScheduler {
 
         // Stop runner
         _runningSenders.get(seqNum).cancel(true);
+        _runningSenders.remove(seqNum);
 
         return true;
     }
