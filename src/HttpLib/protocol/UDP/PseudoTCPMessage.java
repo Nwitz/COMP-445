@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PseudoTCPMessage {
+    public static final int PAYLOAD_MAX_LENGTH = 1013;
+    public static final int PACKET_MAX_LENGTH = 1024;
+
     private String _peerAddress;
     private int _peerPort;
     private byte[] _peerAddressBytes;
@@ -37,11 +40,11 @@ public class PseudoTCPMessage {
         byte[] bytes;
         while (validLength) {
 
-            if (_payload.length - index < 1013) {
+            if (_payload.length - index < PAYLOAD_MAX_LENGTH) {
                 validLength = false;
                 end = _payload.length;
             } else {
-                end = index + 1013;
+                end = index + PAYLOAD_MAX_LENGTH;
             }
             bytes = Arrays.copyOfRange(_payload, index, end);
             index = end;
