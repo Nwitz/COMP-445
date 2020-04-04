@@ -7,6 +7,7 @@ import java.net.InetAddress;
 
 /**
  * Will send a packet to destination indefinitely with a given timeout internal.
+ * No retry if timeout is <= 0
  */
 class PacketSender implements Runnable {
 

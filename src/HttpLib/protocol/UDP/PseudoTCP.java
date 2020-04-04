@@ -12,8 +12,6 @@ import java.util.concurrent.*;
 
 public class PseudoTCP implements IProtocol {
 
-    private final long TIMEOUT_DELAY_MS = 10;
-
     @Override
     public String send(HttpRequest httpRequest, int destinationPort) throws IOException {
         SelectiveRepeatRegistry sequenceNumberRegistry = new SelectiveRepeatRegistry();
