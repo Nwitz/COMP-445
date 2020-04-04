@@ -2,6 +2,8 @@ package HttpLib.protocol.UDP;
 
 import HttpLib.ByteArrayUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -60,13 +62,21 @@ public class PseudoTCPMessage {
         }
     }
 
+    private void buildPayloadFromPackets() throws IOException {
+        _packets.trimToSize();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        for (PseudoTCPPacket packet : _packets) {
+            os.write(packet.getPayload());
+        }
+        _payload = os.toByteArray();
+    }
+
     public void addPacket(PseudoTCPPacket packet, int index) {
         growPackets(index);
         _packets.set(index, packet);
     }
 
     private void growPackets(int index) {
-        _packets.ensureCapacity(index);
         while (_packets.size() <= index)
             _packets.add(new PseudoTCPPacket());
 
