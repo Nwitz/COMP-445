@@ -16,12 +16,12 @@ class PacketSender implements Runnable {
     private final int _destinationPort;
     private final long _timeout;
 
-    PacketSender(DatagramSocket socket, PseudoTCPPacket packet, InetAddress destIp, int destPort, long timeout) {
+    PacketSender(DatagramSocket socket, PseudoTCPPacket packet, InetAddress destIp, int destPort, long timeout_ms) {
         _socket = socket;
         _packet = packet;
         _destinationIp = destIp;
         _destinationPort = destPort;
-        _timeout = timeout;
+        _timeout = timeout_ms;
     }
 
 
@@ -40,19 +40,29 @@ class PacketSender implements Runnable {
         }
 
         // Start send procedure
-        while (true) {
-            try {
-                _socket.send(dtPacket);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (_timeout <= 0) {
+            // Not required to wait for external cancel. Sending simply
+            send(dtPacket);
 
-            // Sleep until acknowledged (Interrupted) or timeout & retry
-            try {
-                Thread.sleep(_timeout);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        } else {
+            while (true) {
+                send(dtPacket);
+
+                // Sleep until acknowledged (Interrupted) or timeout & retry
+                try {
+                    Thread.sleep(_timeout);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+        }
+    }
+
+    private void send(DatagramPacket p) {
+        try {
+            _socket.send(p);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
