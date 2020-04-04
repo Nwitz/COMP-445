@@ -4,6 +4,7 @@ import HttpLib.ByteArrayUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.util.Arrays;
 
 public class PseudoTCPPacket {
@@ -36,6 +37,11 @@ public class PseudoTCPPacket {
         outputStream.write(_peerPort);
         outputStream.write(_payload);
         return outputStream.toByteArray();
+    }
+
+    public DatagramPacket asDatagramPacket() throws IOException {
+        byte[] buf = serialize();
+        return new DatagramPacket(buf, buf.length);
     }
 
     // helper method for quick payload extraction without caring about other content of packet.

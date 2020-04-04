@@ -1,9 +1,8 @@
-package HttpLib.protocol;
+package HttpLib.protocol.UDP;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import HttpLib.*;
-import HttpLib.Exceptions.InvalidRequestException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

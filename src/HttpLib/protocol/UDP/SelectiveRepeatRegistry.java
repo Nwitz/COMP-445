@@ -1,4 +1,6 @@
-package HttpLib.protocol;
+package HttpLib.protocol.UDP;
+
+import HttpLib.protocol.IPacketEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,7 +66,7 @@ class SelectiveRepeatRegistry {
      *
      * @param newBase New window base to sync to [0,Integer.MAX_VALUE]
      */
-    public void sync(int newBase) {
+    public synchronized void sync(int newBase) {
         if (newBase < 0)
             throw new IllegalArgumentException("Invalid sequence base sync.");
 
