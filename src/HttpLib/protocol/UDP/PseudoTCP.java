@@ -1,9 +1,10 @@
-package HttpLib.protocol;
+package HttpLib.protocol.UDP;
 
 import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.Exceptions.InvalidResponseException;
 import HttpLib.HttpRequest;
 import HttpLib.IRequestCallback;
+import HttpLib.protocol.IProtocol;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
