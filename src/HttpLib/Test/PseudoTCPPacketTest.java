@@ -48,5 +48,30 @@ public class PseudoTCPPacketTest {
         assert(Arrays.hashCode(payload) == Arrays.hashCode(receivedPayload));
         assert(type.asChar() == receivedChar);
     }
+
+    @Test
+    public void test_PseudoTCPPacket_fromPacket() throws IOException {
+        // Arrange
+        byte[] address = new byte[4];
+        byte[] port = new byte[2];
+        byte[] payload = new byte[45];
+        PacketType type = PacketType.DATA;
+        int sequenceNumber = 15;
+        random.nextBytes(address);
+        random.nextBytes(port);
+        random.nextBytes(payload);
+        PseudoTCPPacket packet = new PseudoTCPPacket(address, port, payload, type);
+        packet.setSequenceNumber(sequenceNumber);
+        byte[] serialized = packet.serialize();
+
+        // Act
+        PseudoTCPPacket created = new PseudoTCPPacket(serialized);
+
+        assert(packet.getSequenceNumber() == created.getSequenceNumber());
+        assert(packet.getType() == created.getType());
+        assert(Arrays.hashCode(packet.getPeerAddress()) == Arrays.hashCode(created.getPeerAddress()));
+        assert(Arrays.hashCode(packet.getPeerPort()) == Arrays.hashCode(created.getPeerPort()));
+        assert(Arrays.hashCode(packet.getPayload()) == Arrays.hashCode(created.getPayload()));
+    }
 }
 
