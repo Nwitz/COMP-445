@@ -13,6 +13,8 @@ public class PseudoTCPPacket {
     private byte[] _peerAddress;
     private byte[] _peerPort;
 
+    public PseudoTCPPacket() {}
+
     public PseudoTCPPacket(byte[] peerAddress, byte[] peerPort, byte[] payload, PacketType type) {
         _peerAddress = peerAddress;
         _peerPort = peerPort;
@@ -20,8 +22,9 @@ public class PseudoTCPPacket {
         _type = type;
     }
 
-    public PseudoTCPPacket(byte[] peerAddress, byte[] peerPort, PacketType type) {
+    public PseudoTCPPacket(byte[] peerAddress, byte[] peerPort, PacketType type, int sequenceNumber) {
         this(peerAddress, peerPort, new byte[0], type);
+        _sequenceNumber = sequenceNumber;
     }
 
     public PseudoTCPPacket(byte[] receivedPacket) {

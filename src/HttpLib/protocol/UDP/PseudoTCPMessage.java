@@ -2,6 +2,8 @@ package HttpLib.protocol.UDP;
 
 import HttpLib.ByteArrayUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -14,7 +16,7 @@ public class PseudoTCPMessage {
     private byte[] _peerAddressBytes;
     private byte[] _peerPortBytes;
     private byte[] _payload;
-    private ArrayList<PseudoTCPPacket> _packets = new ArrayList<PseudoTCPPacket>();
+    private ArrayList<PseudoTCPPacket> _packets = new ArrayList<PseudoTCPPacket>(10);
 
     /**
      *
@@ -31,6 +33,13 @@ public class PseudoTCPMessage {
         _peerAddressBytes = ByteArrayUtils.stringIPToBytes(peerAddress);
         _payload = payload;
         createPackets();
+    }
+
+    public PseudoTCPMessage(byte[] address, byte[] port) {
+        _peerPort = ByteArrayUtils.bytesToFakeShort(port);
+        _peerAddress = ByteArrayUtils.bytesToStringIP(address);
+        _peerAddressBytes = address;
+        _peerPortBytes = port;
     }
 
     private void createPackets() {
@@ -53,7 +62,47 @@ public class PseudoTCPMessage {
         }
     }
 
+    private void buildPayloadFromPackets() throws IOException {
+        _packets.trimToSize();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        for (PseudoTCPPacket packet : _packets) {
+            os.write(packet.getPayload());
+        }
+        _payload = os.toByteArray();
+    }
+
+    public void addPacket(PseudoTCPPacket packet, int index) {
+        growPackets(index);
+        _packets.set(index, packet);
+    }
+
+    private void growPackets(int index) {
+        while (_packets.size() <= index)
+            _packets.add(new PseudoTCPPacket());
+
+    }
+
     public PseudoTCPPacket[] getPackets() {
-        return _packets.toArray(new PseudoTCPPacket[_packets.size()]);
+        return _packets.toArray(new PseudoTCPPacket[0]);
+    }
+
+    public String getPeerAddress() {
+        return _peerAddress;
+    }
+
+    public int getPeerPort() {
+        return _peerPort;
+    }
+
+    public byte[] getPeerAddressBytes() {
+        return _peerAddressBytes;
+    }
+
+    public byte[] getPeerPortBytes() {
+        return _peerPortBytes;
+    }
+
+    public byte[] getPayload() {
+        return _payload;
     }
 }

@@ -3,8 +3,6 @@ package HttpLib.Test;
 import HttpLib.ByteArrayUtils;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-
 public class ByteArrayUtilsTest {
 
     @Test
@@ -24,17 +22,43 @@ public class ByteArrayUtilsTest {
     }
 
     @Test
+    public void test_BytesToStringIP() {
+        //Arrange
+        String s = "192.168.2.10";
+        byte[] bytes = ByteArrayUtils.stringIPToBytes(s);
+
+        //Act
+        String converted = ByteArrayUtils.bytesToStringIP(bytes);
+
+        //Assert
+        assert(s.contentEquals(converted));
+    }
+
+    @Test
     public void test_ShortToBytes() {
         // Arrange
         int x = 41830;
         byte[] bytes;
 
         // Act
-        bytes = ByteArrayUtils.intToBytes(x);
+        bytes = ByteArrayUtils.fakeShortToBytes(x);
 
         // Assert
-        assert ((bytes[2] & 0xff) == 163);
-        assert ((bytes[3] & 0xff) == 102);
+        assert ((bytes[0] & 0xff) == 163);
+        assert ((bytes[1] & 0xff) == 102);
+    }
+
+    @Test
+    public void test_BytesToFakeShort() {
+        //Arrange
+        int x = 41830;
+        byte[] bytes = ByteArrayUtils.fakeShortToBytes(x);
+
+        //Act
+        int converted = ByteArrayUtils.bytesToFakeShort(bytes);
+
+        //Assert
+        assert(x == converted);
     }
 
     @Test
@@ -48,6 +72,5 @@ public class ByteArrayUtilsTest {
 
         // Assert
         assert(fromReceived == from);
-
     }
 }
