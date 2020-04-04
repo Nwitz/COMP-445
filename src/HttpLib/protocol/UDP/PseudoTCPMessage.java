@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PseudoTCPMessage {
+    public static final int PAYLOAD_MAX_LENGTH = 1013;
+    public static final int PACKET_MAX_LENGTH = 1024;
+
     private String _peerAddress;
     private int _peerPort;
     private byte[] _peerAddressBytes;
     private byte[] _peerPortBytes;
     private byte[] _payload;
-    private ArrayList<PseudoTCPPacket> _packets = new ArrayList<PseudoTCPPacket>();
+    private ArrayList<PseudoTCPPacket> _packets = new ArrayList<PseudoTCPPacket>(10);
 
     /**
      *
@@ -30,6 +33,13 @@ public class PseudoTCPMessage {
         createPackets();
     }
 
+    public PseudoTCPMessage(byte[] address, byte[] port) {
+        _peerPort = ByteArrayUtils.bytesToFakeShort(port);
+        _peerAddress = ByteArrayUtils.bytesToStringIP(address);
+        _peerAddressBytes = address;
+        _peerPortBytes = port;
+    }
+
     private void createPackets() {
         boolean validLength = true;
         int index = 0;
@@ -37,11 +47,11 @@ public class PseudoTCPMessage {
         byte[] bytes;
         while (validLength) {
 
-            if (_payload.length - index < 1013) {
+            if (_payload.length - index < PAYLOAD_MAX_LENGTH) {
                 validLength = false;
                 end = _payload.length;
             } else {
-                end = index + 1013;
+                end = index + PAYLOAD_MAX_LENGTH;
             }
             bytes = Arrays.copyOfRange(_payload, index, end);
             index = end;
@@ -50,7 +60,39 @@ public class PseudoTCPMessage {
         }
     }
 
+    public void addPacket(PseudoTCPPacket packet, int index) {
+        growPackets(index);
+        _packets.set(index, packet);
+    }
+
+    private void growPackets(int index) {
+        _packets.ensureCapacity(index);
+        while (_packets.size() <= index)
+            _packets.add(new PseudoTCPPacket());
+
+    }
+
     public PseudoTCPPacket[] getPackets() {
-        return _packets.toArray(new PseudoTCPPacket[_packets.size()]);
+        return _packets.toArray(new PseudoTCPPacket[0]);
+    }
+
+    public String getPeerAddress() {
+        return _peerAddress;
+    }
+
+    public int getPeerPort() {
+        return _peerPort;
+    }
+
+    public byte[] getPeerAddressBytes() {
+        return _peerAddressBytes;
+    }
+
+    public byte[] getPeerPortBytes() {
+        return _peerPortBytes;
+    }
+
+    public byte[] getPayload() {
+        return _payload;
     }
 }

@@ -19,6 +19,15 @@ public enum PacketType {
     PacketType(char d) {
         this.asChar = d;
     }
+
+    public static PacketType fromChar(final char c) {
+        for (PacketType type : PacketType.values()){
+            if (type.asChar == c) {
+                return type;
+            }
+        }
+        return null;
+    }
 }
 
 
