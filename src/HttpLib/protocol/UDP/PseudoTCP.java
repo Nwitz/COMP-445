@@ -1,6 +1,5 @@
 package HttpLib.protocol.UDP;
 
-import HttpLib.ByteArrayUtils;
 import HttpLib.HttpRequest;
 import HttpLib.IRequestCallback;
 import HttpLib.protocol.IProtocol;
@@ -14,13 +13,6 @@ import java.util.concurrent.*;
 public class PseudoTCP implements IProtocol {
 
     private final long TIMEOUT_DELAY_MS = 10;
-    private final ExecutorService _pool;
-
-    public PseudoTCP() {
-        int numOfCores = Runtime.getRuntime().availableProcessors();
-        int blockingCoeff = 22;
-        _pool = Executors.newFixedThreadPool(numOfCores * blockingCoeff);
-    }
 
     @Override
     public String send(HttpRequest httpRequest, int destinationPort) throws IOException {
@@ -34,6 +26,7 @@ public class PseudoTCP implements IProtocol {
 
         // TODO: Handshaking to peer + sync sequence number
         handshakeInit(socket, sequenceNumberRegistry, destinationIp, destinationPort);
+
 
         return null;
     }

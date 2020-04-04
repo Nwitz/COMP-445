@@ -1,7 +1,5 @@
 package HttpLib.protocol.UDP;
 
-import HttpLib.protocol.IPacketEventListener;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 

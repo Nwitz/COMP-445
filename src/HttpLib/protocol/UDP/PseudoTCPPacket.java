@@ -26,7 +26,7 @@ public class PseudoTCPPacket {
     }
 
     public void setSequenceNumber(int sequenceNumber) {
-        _sequenceNumber = sequenceNumber;
+        this._sequenceNumber = sequenceNumber;
     }
 
     public byte[] serialize() throws IOException {
