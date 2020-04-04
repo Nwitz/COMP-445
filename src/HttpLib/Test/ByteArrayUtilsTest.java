@@ -3,6 +3,8 @@ package HttpLib.Test;
 import HttpLib.ByteArrayUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+
 public class ByteArrayUtilsTest {
 
     @Test
@@ -22,7 +24,7 @@ public class ByteArrayUtilsTest {
     }
 
     @Test
-    public void testShortToBytes() {
+    public void test_ShortToBytes() {
         // Arrange
         int x = 41830;
         byte[] bytes;
@@ -33,5 +35,19 @@ public class ByteArrayUtilsTest {
         // Assert
         assert ((bytes[2] & 0xff) == 163);
         assert ((bytes[3] & 0xff) == 102);
+    }
+
+    @Test
+    public void test_BytesToInt() {
+        // Arrange
+        int from = 1435;
+
+        // Act
+        byte[] bytes = ByteArrayUtils.intToBytes(from);
+        int fromReceived = ByteArrayUtils.bytesToInt(bytes);
+
+        // Assert
+        assert(fromReceived == from);
+
     }
 }

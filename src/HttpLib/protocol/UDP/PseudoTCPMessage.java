@@ -11,7 +11,7 @@ public class PseudoTCPMessage {
     private byte[] _peerAddressBytes;
     private byte[] _peerPortBytes;
     private byte[] _payload;
-    private ArrayList<PseudoTCPPacket> _packets;
+    private ArrayList<PseudoTCPPacket> _packets = new ArrayList<PseudoTCPPacket>();
 
     /**
      *
@@ -53,7 +53,4 @@ public class PseudoTCPMessage {
     public PseudoTCPPacket[] getPackets() {
         return _packets.toArray(new PseudoTCPPacket[_packets.size()]);
     }
-
-
-
 }

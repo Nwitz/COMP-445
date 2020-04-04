@@ -12,6 +12,11 @@ public class ByteArrayUtils {
         return ByteBuffer.allocate(4).putInt(from).array();
     }
 
+    public static int bytesToInt(byte[] from) {
+        ByteBuffer buffer = ByteBuffer.wrap(from);
+        return buffer.getInt();
+    }
+
     public static byte[] stringIPToBytes(String ip) {
         String[] parts = ip.split("\\.");
         byte[] bytes = new byte[4];
