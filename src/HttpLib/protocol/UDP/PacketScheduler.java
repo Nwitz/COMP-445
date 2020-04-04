@@ -1,6 +1,11 @@
 package HttpLib.protocol.UDP;
 
+import HttpLib.ByteArrayUtils;
+
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,8 +66,18 @@ class PacketScheduler {
         while (seqNum < 0);
 
         packet.setSequenceNumber(seqNum);
-        // TODO: Check PacketType to determine if we need retry or not
-        PacketSender sender = new PacketSender(_socket, packet, packet, 9797, TIMEOUT_DELAY_MS);
+
+        int timeout = (needsTimeout(packet) ? (int)TIMEOUT_DELAY_MS : -1);
+        InetAddress address = null;
+        try {
+            address = InetAddress.getByAddress(packet.getPeerAddress());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Could not get scheduled packet destination ip address from byte array.");
+        }
+
+        int port = ByteArrayUtils.bytesToInt(packet.getPeerPort());
+        PacketSender sender = new PacketSender(_socket, packet, address, port, timeout);
         Future<?> senderTask = _pool.submit(sender);
 
         _runningSenders.put(seqNum, senderTask);
@@ -75,6 +90,10 @@ class PacketScheduler {
         _runningSenders.get(seqNum).cancel(true);
 
         return true;
+    }
+
+    private boolean needsTimeout(PseudoTCPPacket packet){
+        return (packet.getType() != PacketType.ACK);
     }
 
 }
