@@ -118,15 +118,6 @@ public class PseudoTCP implements IProtocol {
         };
         messageReceiver.addListener(messageListener);
 
-        IPacketReceiverListener receiverListener = new IPacketReceiverListener() {
-
-            @Override
-            public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
-                System.out.println("Listen received one!");
-            }
-        };
-
-
         // Start receiver thread
         PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
         receiver.addListener(messageReceiver);

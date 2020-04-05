@@ -47,7 +47,7 @@ class PseudoTCPTest {
         Thread t = new Thread(listenTask);
         t.start();
 
-        protocol.send(req, 3000);
+        protocol.send(req, 9797);
 
         t.join();
     }
