@@ -89,7 +89,9 @@ public class PseudoTCPMessage {
     }
 
     public PseudoTCPPacket[] getPackets() {
-        return _packets.toArray(new PseudoTCPPacket[0]);
+        PseudoTCPPacket[] packets = _packets.toArray(new PseudoTCPPacket[0]);
+        packets[packets.length-1].setType(PacketType.FIN);
+        return packets;
     }
 
     public String getPeerAddress() {

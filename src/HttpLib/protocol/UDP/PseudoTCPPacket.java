@@ -67,6 +67,10 @@ public class PseudoTCPPacket {
         return _payload;
     }
 
+    public void setType(PacketType newType) {
+        _type = newType;
+    }
+
     public PacketType getType() {
         return _type;
     }
