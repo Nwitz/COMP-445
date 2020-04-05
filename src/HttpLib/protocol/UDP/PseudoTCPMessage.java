@@ -64,7 +64,7 @@ public class PseudoTCPMessage {
         }
     }
 
-    private void buildPayloadFromPackets() throws IOException {
+    public void buildPayloadFromPackets() throws IOException {
         _packets.trimToSize();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         for (PseudoTCPPacket packet : _packets) {

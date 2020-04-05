@@ -1,7 +1,9 @@
 package HttpLib.protocol.UDP;
 
 import HttpLib.ByteArrayUtils;
+import HttpLib.Exceptions.InvalidResponseException;
 import HttpLib.HttpRequest;
+import HttpLib.HttpResponse;
 import HttpLib.IRequestCallback;
 import HttpLib.protocol.IProtocol;
 
@@ -9,8 +11,10 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.nio.charset.StandardCharsets;
 
-public class PseudoTCP implements IProtocol {
+public class PseudoTCP implements IProtocol, IMessageReceiverListener {
+    PseudoTCPMessage message;
 
     @Override
     public String send(HttpRequest httpRequest, int destinationPort) throws IOException {
@@ -34,7 +38,7 @@ public class PseudoTCP implements IProtocol {
 
         // ===== Start a receiver thread & logic
         // Receiving logic
-        IPacketReceiverListener receiverListener = new IPacketReceiverListener() {
+        IPacketReceiverListener packetReceiverListener = new IPacketReceiverListener() {
 
             @Override
             public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
@@ -46,8 +50,10 @@ public class PseudoTCP implements IProtocol {
             }
         };
 
+        messageReceiver.addListener(this);
+
         PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
-        receiver.addListener(receiverListener);
+        receiver.addListener(packetReceiverListener);
         receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
         receiver.addListener(messageReceiver);      // EX: Listens for DATA etc..
 
@@ -58,12 +64,21 @@ public class PseudoTCP implements IProtocol {
         // Schedule the message's packets to be sent
         scheduler.queuePackets(requestPacketMessage.getPackets());
 
-        // TODO: Have a messageReceiverListener to receive to Response when ready, and return it as HTTPResponse.
-        // TODO: Return reconstructed HTTPResponse( string )
+        while (message == null) {
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+        }
 
+        // Message filled, convert its packets to single payload and read
+        message.buildPayloadFromPackets();
+        byte[] payload = message.getPayload();
 
         // TODO: Close connection
-        return null;
+        return new String(payload, StandardCharsets.UTF_8);
     }
 
     @Override
@@ -88,4 +103,8 @@ public class PseudoTCP implements IProtocol {
     }
 
 
+    @Override
+    public void onMessageReceived(PseudoTCPMessage message) {
+        this.message = message;
+    }
 }
