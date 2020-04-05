@@ -3,6 +3,7 @@ package HttpLib.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import HttpLib.*;
+import HttpLib.protocol.UDP.PseudoTCP;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
