@@ -72,11 +72,6 @@ class PacketReceiver {
             // Make packet from data
             PseudoTCPPacket packet = new PseudoTCPPacket(datagramPacket.getData());
 
-            int sequenceNumber = packet.getSequenceNumber();
-
-            if (seqReg.inWindow(sequenceNumber))
-                receivedPackets.put(sequenceNumber, packet);
-
             // Notify
             for (IPacketReceiverListener listener : _listeners)
                 listener.onPacketReceived(packet, parentReceiver);
