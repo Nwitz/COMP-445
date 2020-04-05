@@ -60,7 +60,10 @@ public class MessageReceiver implements IPacketReceiverListener {
         switch (packet.getType()){
             case DATA:
                 // Buffer message packet
-                addEntry(seqNum, packet);
+                if(seqReg.inWindow(seqNum))
+                    addEntry(seqNum, packet);
+
+                // TODO: Release number + Send ACK to scheduler (Meaning we need a reference to it)
                 break;
             case FIN:
                 // Start message conclusion

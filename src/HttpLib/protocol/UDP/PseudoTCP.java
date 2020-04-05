@@ -33,7 +33,6 @@ public class PseudoTCP implements IProtocol {
 
 
         // ===== Start a receiver thread & logic
-
         // Receiving logic
         IPacketReceiverListener receiverListener = new IPacketReceiverListener() {
 
@@ -41,7 +40,7 @@ public class PseudoTCP implements IProtocol {
             public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
                 switch (packet.getType()){
                     case TER:
-                        // Close connection ... who handles it ?
+                        // TODO: Close connection ... who handles it ?
                         break;
                 }
             }
@@ -82,7 +81,6 @@ public class PseudoTCP implements IProtocol {
         PseudoTCPPacket packet = new PseudoTCPPacket(buffer.array());
         // if packet is SYN,
         sequenceNumberRegistry.sync(6);
-
 
 
         // TODO: Detect that it's a SYN packet type

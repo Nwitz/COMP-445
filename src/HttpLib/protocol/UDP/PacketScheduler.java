@@ -38,7 +38,6 @@ class PacketScheduler implements IPacketReceiverListener {
      * Non-Blocking
      *
      * @param packets
-     * @param seqNumReg
      */
     public void queuePackets(PseudoTCPPacket[] packets) {
         Runnable sequentialSendProcedure = () -> {
