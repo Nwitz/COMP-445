@@ -78,28 +78,11 @@ class PacketReceiver {
         public void start() {
             // Make packet from data
             PseudoTCPPacket packet = new PseudoTCPPacket(datagramPacket.getData());
+
             int sequenceNumber = packet.getSequenceNumber();
 
-            // Handle receiving handshaking
-            // Packet type that should not be changing the data sequence numbers
-            switch (packet.getType()) {
-                case SYN:
-                    seqReg.sync(sequenceNumber);
-                    // send SYN-ACK with packet.getSequenceNumber() in scheduler
-                    // Raise flag to wait for last ACK
-                    break;
-                case SYNACK:
-                    seqReg.release(sequenceNumber);
-                    break;
-                case ACK:
-                    // Check for end of 3-way (in waiting) : Should not bubble up in that case
-                    // Raise HandshakingDone event ?
-                    // else, let go up in event
-                    break;
-                default:
-                    if (seqReg.inWindow(sequenceNumber))
-                        receivedPackets.put(sequenceNumber, packet);
-            }
+            if (seqReg.inWindow(sequenceNumber))
+                receivedPackets.put(sequenceNumber, packet);
 
             // Notify
             for (IPacketReceiverListener listener : _listeners)

@@ -18,6 +18,10 @@ public class MessageReceiver implements IPacketReceiverListener {
         message = new PseudoTCPMessage();
     }
 
+    public PseudoTCPMessage getMessage() {
+        return message;
+    }
+
     public void addListener(IMessageReceiverListener listener) {
         _listeners.add(listener);
     }
