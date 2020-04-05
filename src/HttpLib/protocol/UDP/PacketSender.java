@@ -61,6 +61,10 @@ class PacketSender implements Runnable {
 
     private void send(DatagramPacket p) {
         try {
+            // Hardcoded router destination right now
+            InetAddress routerAddr = InetAddress.getByName("localhost");
+            p.setAddress(routerAddr);
+            p.setPort(3000);
             _socket.send(p);
         } catch (IOException e) {
             e.printStackTrace();

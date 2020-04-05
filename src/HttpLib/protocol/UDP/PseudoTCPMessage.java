@@ -109,6 +109,12 @@ public class PseudoTCPMessage {
     }
 
     public byte[] getPayload() {
+        try {
+            buildPayloadFromPackets();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return _payload;
     }
 }
