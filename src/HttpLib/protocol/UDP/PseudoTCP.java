@@ -59,7 +59,6 @@ public class PseudoTCP implements IProtocol{
 
         PacketReceiver receiver = new PacketReceiver(socket, sequenceNumberRegistry);
         receiver.addListener(packetReceiverListener);
-        receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
         receiver.addListener(messageReceiver);      // EX: Listens for DATA etc..
         receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
 
