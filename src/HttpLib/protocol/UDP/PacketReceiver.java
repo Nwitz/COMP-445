@@ -12,16 +12,13 @@ import java.util.concurrent.Future;
 class PacketReceiver {
 
     private DatagramSocket socket;
-    private PacketScheduler scheduler;
     private SelectiveRepeatRegistry seqReg;
     private final ExecutorService receptorExecutor;
     private Future<?> receptorFuture;
-    private HashMap<Integer, PseudoTCPPacket> receivedPackets = new HashMap<Integer, PseudoTCPPacket>();
     private ArrayList<IPacketReceiverListener> _listeners = new ArrayList<>();
 
-    public PacketReceiver(DatagramSocket socket, PacketScheduler scheduler, SelectiveRepeatRegistry repeatRegistry) {
+    public PacketReceiver(DatagramSocket socket, SelectiveRepeatRegistry repeatRegistry) {
         this.socket = socket;
-        this.scheduler = scheduler;
         seqReg = repeatRegistry;
         receptorExecutor = Executors.newSingleThreadExecutor();
     }
@@ -59,10 +56,6 @@ class PacketReceiver {
     public void stopReceiving() {
         if(receptorFuture != null && !receptorFuture.isDone())
             receptorFuture.cancel(true);
-    }
-
-    public PseudoTCPPacket flush(int i){
-        return receivedPackets.remove(i);
     }
 
     private class PacketReceivedTask extends Thread {
