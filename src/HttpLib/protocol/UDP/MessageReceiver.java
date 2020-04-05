@@ -10,20 +10,19 @@ public class MessageReceiver {
     private SelectiveRepeatRegistry seqReg;
     private HashMap<Integer, PseudoTCPPacket> receivedPackets = new HashMap<Integer, PseudoTCPPacket>();
     private PseudoTCPMessage message;
-    private int port;
     int terminationPacket = -1;
     private boolean monitorSocket;
+    private DatagramSocket socket;
 
-    MessageReceiver(int port, SelectiveRepeatRegistry repeatRegistry) {
-        this.port = port;
+    MessageReceiver(DatagramSocket socket, SelectiveRepeatRegistry repeatRegistry) {
         seqReg = repeatRegistry;
         seqReg.addListener(eventListener);
         message = new PseudoTCPMessage();
+        this.socket = socket;
     }
 
     public void receiveMessage() throws SocketException {
         monitorSocket = true;
-        DatagramSocket socket = new DatagramSocket();
         DatagramPacket packet;
         byte[] buffer;
         PacketReceivedTask packetReceivedTask;
@@ -80,15 +79,28 @@ public class MessageReceiver {
             PseudoTCPPacket packet = new PseudoTCPPacket(datagramPacket.getData());
             int sequence = packet.getSequenceNumber();
 
-            if (seqReg.inWindow(sequence)) {
-                addEntry(sequence, packet);
-                seqReg.release(sequence);
-            }
-
             // TODO: check if this is termination packet
 
             // send ack regardless of in sequence or not incase of drop
-            // TODO: send ack
+            switch (packet.getType()) {
+                case DATA:
+                    if (seqReg.inWindow(sequence)) {
+                        addEntry(sequence, packet);
+                        seqReg.release(sequence);
+                    }
+                    // TODO send ack
+                    break;
+                case SYN:
+                    if (message == null) { // prevent multiple syns;
+                        message = new PseudoTCPMessage(packet.getPeerAddress(), packet.getPeerPort());
+                        seqReg.sync(sequence);
+                        seqReg.release(sequence);
+                        // TODO send ack
+                    }
+                case ACK:
+                    break;
+                    // TODO termination case.
+            }
         }
     }
 }
