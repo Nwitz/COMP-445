@@ -79,17 +79,17 @@ class PacketScheduler implements IPacketReceiverListener {
                 PacketType.ACK,
                 packet.getSequenceNumber()
         );
-        internalQueuePacket(packet);
+        internalQueuePacket(ack);
     }
 
     private void sendSynAck(PseudoTCPPacket packet) {
-        PseudoTCPPacket ack = new PseudoTCPPacket(
+        PseudoTCPPacket synAck = new PseudoTCPPacket(
                 packet.getPeerAddress(),
                 packet.getPeerPort(),
                 PacketType.SYNACK,
                 packet.getSequenceNumber()
         );
-        internalQueuePacket(packet);
+        internalQueuePacket(synAck);
     }
 
     private void internalQueuePacket(PseudoTCPPacket packet) {
