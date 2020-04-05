@@ -6,8 +6,6 @@ import HttpLib.protocol.IProtocol;
 
 import java.io.IOException;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
 
 public class PseudoTCP implements IProtocol {
 
@@ -71,8 +69,7 @@ public class PseudoTCP implements IProtocol {
 
         // Open Socket
         InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
-        DatagramSocket socket = new DatagramSocket();
-        socket.bind(bindAddress);
+        DatagramSocket socket = new DatagramSocket(bindAddress);
 
         // Message receiver/constructor object
         MessageReceiver messageReceiver = new MessageReceiver(sequenceNumberRegistry);
@@ -108,7 +105,15 @@ public class PseudoTCP implements IProtocol {
                     return;
                 }
 
-                callback.onRequestReceived(request);
+                response = callback.onRequestReceived(request);
+
+                PseudoTCPMessage reponseMessage = new PseudoTCPMessage(
+                        message.getPeerAddress(),
+                        message.getPeerPort(),
+                        response.toString().getBytes());
+
+                scheduler.queuePackets(reponseMessage.getPackets());
+                return;
             }
         };
         messageReceiver.addListener(messageListener);
@@ -116,13 +121,18 @@ public class PseudoTCP implements IProtocol {
         // Start receiver thread
         PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
         receiver.addListener(scheduler);
+        receiver.addListener(messageReceiver);
 
         receiver.startReceiving();
 
-
-        // TODO: Detect that it's a SYN packet type
-
-        // Block indefinitely
+        // Block since we need to listen indefinitely
+        while(true) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
