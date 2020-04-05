@@ -28,14 +28,42 @@ public class PseudoTCP implements IProtocol {
                 destinationPort,
                 httpRequest.toString().getBytes());
 
+
         // TODO: Create message constructor obj
 
 
-        // Start a receiver thread & logic
+        // ===== Start a receiver thread & logic
+
+        // Receiving logic
+        IPacketReceiverListener receiverListener = new IPacketReceiverListener() {
+
+            @Override
+            public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
+                switch (packet.getType()){
+                    case DATA:
+                    case FIN:
+                        // To messageContructor
+                        break;
+                    case TER:
+                        // Close connection
+                        break;
+                    case SYN:
+                        // potentially Reset connection construction since resync
+                        break;
+                    case ACK:
+                }
+            }
+        };
+
         PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
         receiver.startReceiving();
+        receiver.addListener(receiverListener);
+        // receiver.addListener(messageConstrutor);
+
+
         // TODO: add eventlistener
 
+        // =====
         // Schedule the message's packets to be sent
         scheduler.queuePackets(requestPacketMessage.getPackets(), sequenceNumberRegistry);
 

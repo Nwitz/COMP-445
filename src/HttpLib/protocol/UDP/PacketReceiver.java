@@ -3,6 +3,7 @@ package HttpLib.protocol.UDP;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,15 +17,17 @@ class PacketReceiver {
     private final ExecutorService receptorExecutor;
     private Future<?> receptorFuture;
     private HashMap<Integer, PseudoTCPPacket> receivedPackets = new HashMap<Integer, PseudoTCPPacket>();
+    private ArrayList<IPacketReceiverListener> _listeners = new ArrayList<>();
 
     public PacketReceiver(DatagramSocket socket, PacketScheduler scheduler, SelectiveRepeatRegistry repeatRegistry) {
         this.socket = socket;
         this.scheduler = scheduler;
         seqReg = repeatRegistry;
         receptorExecutor = Executors.newSingleThreadExecutor();
+    }
 
-        //seqReg.addListener(eventListener);
-        // message = new PseudoTCPMessage();
+    public void addListener(IPacketReceiverListener listener) {
+        _listeners.add(listener);
     }
 
     public void startReceiving() {
@@ -42,7 +45,7 @@ class PacketReceiver {
                     socket.receive(packet); // blocking
 
                     // Create new thread to process
-                    packetReceivedTask = new PacketReceivedTask(packet);
+                    packetReceivedTask = new PacketReceivedTask(packet, this);
                     packetReceivedTask.start();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -64,9 +67,11 @@ class PacketReceiver {
 
     private class PacketReceivedTask extends Thread {
         DatagramPacket datagramPacket;
+        PacketReceiver parentReceiver;
 
-        PacketReceivedTask(DatagramPacket packet) {
+        PacketReceivedTask(DatagramPacket packet, PacketReceiver receiver) {
             this.datagramPacket = packet;
+            parentReceiver = receiver;
         }
 
         @Override
@@ -96,7 +101,10 @@ class PacketReceiver {
                         receivedPackets.put(sequenceNumber, packet);
             }
 
-            // Raise event, send packet up
+            // Notify
+            for (IPacketReceiverListener listener : _listeners)
+                listener.onPacketReceived(packet, parentReceiver);
+
         }
     }
 
