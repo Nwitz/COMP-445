@@ -21,15 +21,15 @@ public class PseudoTCP implements IProtocol {
         DatagramSocket socket = new DatagramSocket();   // Will be given an ephemeral port
 
         // Setup sending scheduler
-        PacketScheduler scheduler = new PacketScheduler(socket);
+        PacketScheduler scheduler = new PacketScheduler(socket, sequenceNumberRegistry);
 
         PseudoTCPMessage requestPacketMessage = new PseudoTCPMessage(
                 ByteArrayUtils.bytesToStringIP(destinationIp.getAddress()),
                 destinationPort,
                 httpRequest.toString().getBytes());
 
-
-        // TODO: Create message constructor obj
+        // Message receiver/constructor object
+        MessageReceiver messageReceiver = new MessageReceiver(sequenceNumberRegistry);
 
 
         // ===== Start a receiver thread & logic
@@ -40,36 +40,30 @@ public class PseudoTCP implements IProtocol {
             @Override
             public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
                 switch (packet.getType()){
-                    case DATA:
-                    case FIN:
-                        // To messageContructor
-                        break;
                     case TER:
-                        // Close connection
+                        // Close connection ... who handles it ?
                         break;
-                    case SYN:
-                        // potentially Reset connection construction since resync
-                        break;
-                    case ACK:
                 }
             }
         };
 
         PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
-        receiver.startReceiving();
         receiver.addListener(receiverListener);
-        // receiver.addListener(messageConstrutor);
+        receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
+        receiver.addListener(messageReceiver);      // EX: Listens for DATA etc..
 
-
-        // TODO: add eventlistener
+        // All listeners ready, we can start receiving and scheduling packets
+        receiver.startReceiving();
 
         // =====
         // Schedule the message's packets to be sent
-        scheduler.queuePackets(requestPacketMessage.getPackets(), sequenceNumberRegistry);
+        scheduler.queuePackets(requestPacketMessage.getPackets());
+
+        // TODO: Have a messageReceiverListener to receive to Response when ready, and return it as HTTPResponse.
+        // TODO: Return reconstructed HTTPResponse( string )
+
 
         // TODO: Close connection
-
-        // TODO: Return reconstructed HTTPResponse( string )
         return null;
     }
 

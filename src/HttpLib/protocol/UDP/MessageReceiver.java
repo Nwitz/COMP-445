@@ -1,22 +1,26 @@
 package HttpLib.protocol.UDP;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MessageReceiver implements IPacketReceiverListener {
 
     private SelectiveRepeatRegistry seqReg;
     private HashMap<Integer, PseudoTCPPacket> receivedPackets = new HashMap<Integer, PseudoTCPPacket>();
+    private ArrayList<IMessageReceiverListener> _listeners = new ArrayList<>();
     private PseudoTCPMessage message;
     int terminationPacketNum = -1;
+    boolean isActive = true;
 
-    MessageReceiver(DatagramSocket socket, SelectiveRepeatRegistry repeatRegistry) {
+    MessageReceiver(SelectiveRepeatRegistry repeatRegistry) {
         seqReg = repeatRegistry;
         seqReg.addListener(eventListener);
         message = new PseudoTCPMessage();
+    }
+
+    public void addListener(IMessageReceiverListener listener) {
+        _listeners.add(listener);
     }
 
     private void addEntry(int index, PseudoTCPPacket packet) {
@@ -32,8 +36,13 @@ public class MessageReceiver implements IPacketReceiverListener {
                 i = seqReg.unsignedWrap(i + 1);
 
                 // Message is entirely received
-                if (newBase == terminationPacketNum)
-                    return;
+                if (newBase == terminationPacketNum){
+                    isActive = false;
+
+                    // Notify that message reception is complete
+                    for (IMessageReceiverListener listener : _listeners)
+                        listener.onMessageReceived(message);
+                }
             }
         }
 
@@ -44,6 +53,9 @@ public class MessageReceiver implements IPacketReceiverListener {
 
     @Override
     public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
+        // Listen for reception only until the message is complete
+        if(!isActive) return;
+
         int seqNum = packet.getSequenceNumber();
         switch (packet.getType()){
             case DATA:
