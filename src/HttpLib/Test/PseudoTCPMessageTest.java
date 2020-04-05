@@ -54,9 +54,9 @@ public class PseudoTCPMessageTest {
         packet1.setSequenceNumber(3);
 
         // Act
-        message.addPacket(packet3, 2);
-        message.addPacket(packet1, 0);
-        message.addPacket(packet2, 1);
+        message.addPacketAt(packet3, 2);
+        message.addPacketAt(packet1, 0);
+        message.addPacketAt(packet2, 1);
         PseudoTCPPacket[] packets = message.getPackets();
 
         // Assert

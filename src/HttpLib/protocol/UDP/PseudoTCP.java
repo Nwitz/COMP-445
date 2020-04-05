@@ -5,9 +5,13 @@ import HttpLib.HttpRequest;
 import HttpLib.IRequestCallback;
 import HttpLib.protocol.IProtocol;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.MembershipKey;
+import java.util.Set;
 
 public class PseudoTCP implements IProtocol {
 
@@ -45,7 +49,20 @@ public class PseudoTCP implements IProtocol {
     @Override
     public void listen(int port, IRequestCallback callback) throws IOException {
         SelectiveRepeatRegistry sequenceNumberRegistry = new SelectiveRepeatRegistry();
-        DatagramSocket socket = new DatagramSocket(port);
+
+        DatagramSocket socket = new DatagramSocket();
+        DatagramChannel channel = socket.getChannel();
+        byte[] bytes = new byte[PseudoTCPMessage.PACKET_MAX_LENGTH];
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        // read from channel
+        channel.read(buffer);
+        // fill packet
+        PseudoTCPPacket packet = new PseudoTCPPacket(buffer.array());
+        // if packet is SYN,
+        sequenceNumberRegistry.sync(6);
+
+
 
         // TODO: Detect that it's a SYN packet type
 

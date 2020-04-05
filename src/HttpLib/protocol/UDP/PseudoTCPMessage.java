@@ -42,6 +42,8 @@ public class PseudoTCPMessage {
         _peerPortBytes = port;
     }
 
+    public PseudoTCPMessage() { }
+
     private void createPackets() {
         boolean validLength = true;
         int index = 0;
@@ -71,7 +73,11 @@ public class PseudoTCPMessage {
         _payload = os.toByteArray();
     }
 
-    public void addPacket(PseudoTCPPacket packet, int index) {
+    public void addPacket(PseudoTCPPacket packet) {
+        _packets.add(packet);
+    }
+
+    public void addPacketAt(PseudoTCPPacket packet, int index) {
         growPackets(index);
         _packets.set(index, packet);
     }
