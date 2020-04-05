@@ -57,16 +57,19 @@ class PacketScheduler {
     }
 
     private void internalQueuePacket(PseudoTCPPacket packet, SelectiveRepeatRegistry seqNumReg) {
-        // Wait until we can get a valid sequence number
         int seqNum = -1;
-        do {
-            seqNum = seqNumReg.requestNext();
+
+        // Assuming the ACK packet already has the sequence number to which it acknowledge
+        if(!isACK(packet)){
+            // Wait until we can get a valid sequence number
+            do {
+                seqNum = seqNumReg.requestNext();
+            }
+            while (seqNum < 0);
+            packet.setSequenceNumber(seqNum);
         }
-        while (seqNum < 0);
 
-        packet.setSequenceNumber(seqNum);
-
-        int timeout = (needsTimeout(packet) ? (int)TIMEOUT_DELAY_MS : -1);
+        int timeout = (isACK(packet) ? (int)TIMEOUT_DELAY_MS : -1);
         InetAddress address = null;
         try {
             address = InetAddress.getByAddress(packet.getPeerAddress());
@@ -79,7 +82,8 @@ class PacketScheduler {
         PacketSender sender = new PacketSender(_socket, packet, address, port, timeout);
         Future<?> senderTask = _pool.submit(sender);
 
-        _runningSenders.put(seqNum, senderTask);
+        if(!isACK(packet))
+            _runningSenders.put(seqNum, senderTask);
     }
 
     public synchronized boolean acknowledge(int seqNum) {
@@ -92,7 +96,7 @@ class PacketScheduler {
         return true;
     }
 
-    private boolean needsTimeout(PseudoTCPPacket packet){
+    private boolean isACK(PseudoTCPPacket packet){
         return (packet.getType() != PacketType.ACK);
     }
 
