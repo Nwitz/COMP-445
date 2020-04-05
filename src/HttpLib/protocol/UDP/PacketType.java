@@ -4,8 +4,9 @@ public enum PacketType {
     DATA('d'),
     SYN('s'),
     SYNACK('z'),
-    ACK('a');
-    // NACK('n');
+    ACK('a'),
+    FIN('f'),       // End of message data signal
+    TER('t');       // Connection closure signal
 
 
 

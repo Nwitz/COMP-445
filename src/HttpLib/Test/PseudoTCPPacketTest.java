@@ -2,6 +2,7 @@ package HttpLib.Test;
 
 import HttpLib.ByteArrayUtils;
 import HttpLib.protocol.UDP.PacketType;
+import HttpLib.protocol.UDP.PseudoTCP;
 import HttpLib.protocol.UDP.PseudoTCPPacket;
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +51,8 @@ public class PseudoTCPPacketTest {
     }
 
     @Test
-    public void test_PseudoTCPPacket_fromPacket() throws IOException {
+    public
+    void test_PseudoTCPPacket_fromPacket() throws IOException {
         // Arrange
         byte[] address = new byte[4];
         byte[] port = new byte[2];

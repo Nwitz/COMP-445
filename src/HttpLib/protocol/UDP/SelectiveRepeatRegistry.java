@@ -12,6 +12,7 @@ class SelectiveRepeatRegistry {
 
     private ArrayList<IPacketEventListener> _listeners = new ArrayList<IPacketEventListener>();
     private int _windowSize;
+    public static final int MAX_VALID = Integer.MAX_VALUE / 2;
 
     // Active sequence window storage
     private HashMap<Integer, SlotState> _seq = new HashMap<>();
@@ -20,12 +21,12 @@ class SelectiveRepeatRegistry {
 
     public SelectiveRepeatRegistry() {
         // Based on TCP 32-bit sequence number convention
-        this(Integer.MAX_VALUE / 2);
+        this(MAX_VALID);
     }
 
     public SelectiveRepeatRegistry(int windowSize) {
-        if (windowSize < 0 || windowSize > Integer.MAX_VALUE / 2)
-            throw new IllegalArgumentException("WindowSize needs to be in range [0," + (Integer.MAX_VALUE / 2) + "].");
+        if (windowSize < 0 || windowSize > MAX_VALID)
+            throw new IllegalArgumentException("WindowSize needs to be in range [0," + (MAX_VALID) + "].");
 
         _windowSize = windowSize;
     }
@@ -37,8 +38,8 @@ class SelectiveRepeatRegistry {
      * @param size New sequence windows size to use [0,Integer.MAX_VALUE / 2]
      */
     public void setWindowSize(int size) {
-        if (size < 0 || size > Integer.MAX_VALUE / 2)
-            throw new IllegalArgumentException("WindowSize needs to be in range [0," + (Integer.MAX_VALUE / 2) + "].");
+        if (size < 0 || size > MAX_VALID)
+            throw new IllegalArgumentException("WindowSize needs to be in range [0," + (MAX_VALID) + "].");
 
         _windowSize = size;
 
@@ -88,7 +89,9 @@ class SelectiveRepeatRegistry {
     public boolean release(int i) {
         boolean notify = false;
 
+
         synchronized (this) {
+            int initialBase = _base;
             if (!inWindow(i)) return false;
 
             if (_seq.get(i) != SlotState.Requested)
@@ -107,12 +110,12 @@ class SelectiveRepeatRegistry {
 
                 notify = true;
             }
-        }
 
-        // Notify the observers
-        if (notify) {
-            for (IPacketEventListener listener : _listeners) {
-                listener.onCanRequest();
+            // Notify the observers
+            if (notify) {
+                for (IPacketEventListener listener : _listeners) {
+                    listener.onWindowShift(initialBase, _base);
+                }
             }
         }
 
@@ -159,7 +162,7 @@ class SelectiveRepeatRegistry {
             return (0 <= v && v < end) || (_base <= v);
     }
 
-    private int unsignedWrap(int v) {
+    public int unsignedWrap(int v) {
         if (v < 0) {
             v += Integer.MAX_VALUE;
             v++;

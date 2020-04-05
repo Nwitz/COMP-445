@@ -1,13 +1,11 @@
 package HttpLib.protocol.UDP;
 
-import HttpLib.ByteArrayUtils;
-import HttpLib.HttpRequest;
-import HttpLib.IRequestCallback;
+import HttpLib.*;
+import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.protocol.IProtocol;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
 
 public class PseudoTCP implements IProtocol {
 
@@ -20,35 +18,121 @@ public class PseudoTCP implements IProtocol {
         DatagramSocket socket = new DatagramSocket();   // Will be given an ephemeral port
 
         // Setup sending scheduler
-        PacketScheduler scheduler = new PacketScheduler(socket);
+        PacketScheduler scheduler = new PacketScheduler(socket, sequenceNumberRegistry);
 
         PseudoTCPMessage requestPacketMessage = new PseudoTCPMessage(
                 ByteArrayUtils.bytesToStringIP(destinationIp.getAddress()),
                 destinationPort,
                 httpRequest.toString().getBytes());
 
-        // TODO: (Handshaking) Establish reliable connection with peer
+        // Message receiver/constructor object
+        MessageReceiver messageReceiver = new MessageReceiver(sequenceNumberRegistry);
 
-        // TODO: Start a receiver thread of some sort to receive the ACK. (In Scheduler)
 
+        // ===== Start a receiver thread & logic
+        // Receiving logic
+        IPacketReceiverListener receiverListener = new IPacketReceiverListener() {
+
+            @Override
+            public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
+                switch (packet.getType()){
+                    case TER:
+                        // TODO: Close connection ... who handles it ?
+                        break;
+                }
+            }
+        };
+
+        PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
+        receiver.addListener(receiverListener);
+        receiver.addListener(messageReceiver);      // EX: Listens for DATA etc..
+        receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
+
+        // All listeners ready, we can start receiving and scheduling packets
+        receiver.startReceiving();
+
+        // =====
         // Schedule the message's packets to be sent
-        scheduler.queuePackets(requestPacketMessage.getPackets(), sequenceNumberRegistry);
+        scheduler.queuePackets(requestPacketMessage.getPackets());
 
-        // TODO: Once message sent entirely, listen for response message
+        // TODO: Have a messageReceiverListener to receive to Response when ready, and return it as HTTPResponse.
+        // TODO: Return reconstructed HTTPResponse( string )
+
 
         // TODO: Close connection
-
-        // TODO: Return reconstructed HTTPResponse( string )
         return null;
     }
 
     @Override
     public void listen(int port, IRequestCallback callback) throws IOException {
         SelectiveRepeatRegistry sequenceNumberRegistry = new SelectiveRepeatRegistry();
-        DatagramSocket socket = new DatagramSocket(port);
 
-        // TODO: Detect that it's a SYN packet type
+        // Open Socket
+        InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
+        DatagramSocket socket = new DatagramSocket(bindAddress);
 
+        // Message receiver/constructor object
+        MessageReceiver messageReceiver = new MessageReceiver(sequenceNumberRegistry);
+
+        // Setup sending scheduler
+        PacketScheduler scheduler = new PacketScheduler(socket, sequenceNumberRegistry);
+
+        IMessageReceiverListener messageListener = new IMessageReceiverListener() {
+
+            @Override
+            public void onMessageReceived(PseudoTCPMessage message) {
+                byte[] buf = message.getPayload();
+                String rawRequest = new String(buf, 0, buf.length);
+
+                HttpRequest request = null;
+                HttpResponse response = null;
+
+                try {
+                    request = new HttpRequest(rawRequest);
+                } catch (InvalidRequestException e) {
+                    System.out.println("Received an invalid HttpRequest.");
+                    System.out.println(e.getMessage());
+                    System.out.println();
+                    System.out.println(rawRequest);
+                    response = new HttpResponse(HttpStatusCode.BadRequest);
+
+                    PseudoTCPMessage reponseMessage = new PseudoTCPMessage(
+                            message.getPeerAddress(),
+                            message.getPeerPort(),
+                            response.toString().getBytes());
+
+                    scheduler.queuePackets(reponseMessage.getPackets());
+                    return;
+                }
+
+                response = callback.onRequestReceived(request);
+
+                PseudoTCPMessage reponseMessage = new PseudoTCPMessage(
+                        message.getPeerAddress(),
+                        message.getPeerPort(),
+                        response.toString().getBytes());
+
+                scheduler.queuePackets(reponseMessage.getPackets());
+                return;
+            }
+        };
+        messageReceiver.addListener(messageListener);
+
+        // Start receiver thread
+        PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
+        receiver.addListener(messageReceiver);
+        receiver.addListener(scheduler);
+
+        receiver.startReceiving();
+
+        // Block since we need to listen indefinitely
+        while(true) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
