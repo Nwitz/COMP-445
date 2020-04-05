@@ -99,7 +99,7 @@ class PacketScheduler implements IPacketReceiverListener {
     }
 
     private boolean isACK(PseudoTCPPacket packet) {
-        return (packet.getType() != PacketType.ACK);
+        return (packet.getType() == PacketType.ACK);
     }
 
     @Override
