@@ -135,14 +135,16 @@ class PacketScheduler implements IPacketReceiverListener {
             _seqNumReg.release(seqNum);
 
         switch (packet.getType()) {
-            case SYN:
-                sendSynAck(packet);
-                break;
+
             case FIN:
-            case SYNACK:
             case DATA:
                 sendAck(packet);
                 break;
+            case SYN:
+                sendSynAck(packet);
+                break;
+            case SYNACK:
+                sendAck(packet);
             case ACK:
                 _seqNumReg.release(seqNum);
                 acknowledge(seqNum);
