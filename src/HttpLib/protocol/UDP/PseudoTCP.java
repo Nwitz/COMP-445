@@ -45,8 +45,8 @@ public class PseudoTCP implements IProtocol {
 
         PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
         receiver.addListener(receiverListener);
-        receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
         receiver.addListener(messageReceiver);      // EX: Listens for DATA etc..
+        receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
 
         // All listeners ready, we can start receiving and scheduling packets
         receiver.startReceiving();
@@ -118,10 +118,19 @@ public class PseudoTCP implements IProtocol {
         };
         messageReceiver.addListener(messageListener);
 
+        IPacketReceiverListener receiverListener = new IPacketReceiverListener() {
+
+            @Override
+            public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
+                System.out.println("Listen received one!");
+            }
+        };
+
+
         // Start receiver thread
         PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
-        receiver.addListener(scheduler);
         receiver.addListener(messageReceiver);
+        receiver.addListener(scheduler);
 
         receiver.startReceiving();
 

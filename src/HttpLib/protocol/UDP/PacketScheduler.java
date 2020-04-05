@@ -80,7 +80,7 @@ class PacketScheduler implements IPacketReceiverListener {
             throw new RuntimeException("Could not get scheduled packet destination ip address from byte array.");
         }
 
-        int port = ByteArrayUtils.bytesToInt(packet.getPeerPort());
+        int port = ByteArrayUtils.bytesToFakeShort(packet.getPeerPort());
         PacketSender sender = new PacketSender(_socket, packet, address, port, timeout);
         Future<?> senderTask = _pool.submit(sender);
 
