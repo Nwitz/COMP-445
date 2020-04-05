@@ -1,8 +1,7 @@
 package HttpLib.protocol.UDP;
 
-import HttpLib.ByteArrayUtils;
-import HttpLib.HttpRequest;
-import HttpLib.IRequestCallback;
+import HttpLib.*;
+import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.protocol.IProtocol;
 
 import java.io.IOException;
@@ -70,21 +69,60 @@ public class PseudoTCP implements IProtocol {
     public void listen(int port, IRequestCallback callback) throws IOException {
         SelectiveRepeatRegistry sequenceNumberRegistry = new SelectiveRepeatRegistry();
 
+        // Open Socket
+        InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
         DatagramSocket socket = new DatagramSocket();
-        DatagramChannel channel = socket.getChannel();
-        byte[] bytes = new byte[PseudoTCPMessage.PACKET_MAX_LENGTH];
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        socket.bind(bindAddress);
 
-        // read from channel
-        channel.read(buffer);
-        // fill packet
-        PseudoTCPPacket packet = new PseudoTCPPacket(buffer.array());
-        // if packet is SYN,
-        sequenceNumberRegistry.sync(6);
+        // Message receiver/constructor object
+        MessageReceiver messageReceiver = new MessageReceiver(sequenceNumberRegistry);
+
+        // Setup sending scheduler
+        PacketScheduler scheduler = new PacketScheduler(socket, sequenceNumberRegistry);
+
+        IMessageReceiverListener messageListener = new IMessageReceiverListener() {
+
+            @Override
+            public void onMessageReceived(PseudoTCPMessage message) {
+                byte[] buf = message.getPayload();
+                String rawRequest = new String(buf, 0, buf.length);
+
+                HttpRequest request = null;
+                HttpResponse response = null;
+
+                try {
+                    request = new HttpRequest(rawRequest);
+                } catch (InvalidRequestException e) {
+                    System.out.println("Received an invalid HttpRequest.");
+                    System.out.println(e.getMessage());
+                    System.out.println();
+                    System.out.println(rawRequest);
+                    response = new HttpResponse(HttpStatusCode.BadRequest);
+
+                    PseudoTCPMessage reponseMessage = new PseudoTCPMessage(
+                            message.getPeerAddress(),
+                            message.getPeerPort(),
+                            response.toString().getBytes());
+
+                    scheduler.queuePackets(reponseMessage.getPackets());
+                    return;
+                }
+
+                callback.onRequestReceived(request);
+            }
+        };
+        messageReceiver.addListener(messageListener);
+
+        // Start receiver thread
+        PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
+        receiver.addListener(scheduler);
+
+        receiver.startReceiving();
 
 
         // TODO: Detect that it's a SYN packet type
 
+        // Block indefinitely
     }
 
 
