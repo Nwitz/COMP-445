@@ -1,6 +1,4 @@
-package HttpLib.protocol;
-
-import org.junit.jupiter.api.Test;
+package HttpLib.protocol.UDP;
 
 import java.util.ArrayList;
 

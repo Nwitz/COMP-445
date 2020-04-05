@@ -2,8 +2,10 @@ package HttpLib.protocol.UDP;
 
 public enum PacketType {
     DATA('d'),
-    ACK('a'),
-    NACK('n');
+    SYN('s'),
+    SYNACK('z'),
+    ACK('a');
+    // NACK('n');
 
 
 
