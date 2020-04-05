@@ -43,6 +43,13 @@ public class PseudoTCP implements IProtocol, IMessageReceiverListener {
             @Override
             public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
                 switch (packet.getType()){
+                    case DATA:
+                        PseudoTCPPacket ack = new PseudoTCPPacket(
+                                packet.getPeerAddress(),
+                                packet.getPeerPort(),
+                                PacketType.ACK,
+                                packet.getSequenceNumber());
+                        scheduler.queuePacket(ack);
                     case TER:
                         // TODO: Close connection ... who handles it ?
                         break;

@@ -58,6 +58,26 @@ class PacketScheduler implements IPacketReceiverListener {
         _queuingLock.unlock();
     }
 
+    private void sendAck(PseudoTCPPacket packet) {
+        PseudoTCPPacket ack = new PseudoTCPPacket(
+                packet.getPeerAddress(),
+                packet.getPeerPort(),
+                PacketType.ACK,
+                packet.getSequenceNumber()
+        );
+        internalQueuePacket(packet);
+    }
+
+    private void sendSynAck(PseudoTCPPacket packet) {
+        PseudoTCPPacket ack = new PseudoTCPPacket(
+                packet.getPeerAddress(),
+                packet.getPeerPort(),
+                PacketType.SYNACK,
+                packet.getSequenceNumber()
+        );
+        internalQueuePacket(packet);
+    }
+
     private void internalQueuePacket(PseudoTCPPacket packet) {
         int seqNum = -1;
 
@@ -102,11 +122,31 @@ class PacketScheduler implements IPacketReceiverListener {
         return (packet.getType() != PacketType.ACK);
     }
 
+    private void ackReceived(PseudoTCPPacket packet) {
+
+    }
+
     @Override
     public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
         int seqNum = packet.getSequenceNumber();
         // Receiving ACK, releasing that number since that packet reached his destination
+        // TODO: manage acks
         if (!isACK(packet))
             _seqNumReg.release(seqNum);
+
+        switch (packet.getType()) {
+            case SYN:
+                sendSynAck(packet);
+                break;
+            case FIN:
+            case SYNACK:
+            case DATA:
+                sendAck(packet);
+                break;
+            case ACK:
+                _seqNumReg.release(seqNum);
+                acknowledge(seqNum);
+                break;
+        }
     }
 }

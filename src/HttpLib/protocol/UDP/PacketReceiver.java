@@ -85,11 +85,11 @@ class PacketReceiver {
             switch (packet.getType()) {
                 case SYN:
                     seqReg.sync(sequenceNumber);
-                    // send SYN-ACK with packet.getSequenceNumber()
+                    // send SYN-ACK with packet.getSequenceNumber() in scheduler
                     // Raise flag to wait for last ACK
                     break;
                 case SYNACK:
-                    // Forward to scheduler ?
+                    seqReg.release(sequenceNumber);
                     break;
                 case ACK:
                     // Check for end of 3-way (in waiting) : Should not bubble up in that case

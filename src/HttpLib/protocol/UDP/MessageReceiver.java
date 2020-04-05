@@ -57,18 +57,15 @@ public class MessageReceiver implements IPacketReceiverListener {
 
         int seqNum = packet.getSequenceNumber();
         switch (packet.getType()){
+            case FIN:
+                // Start message conclusion
+                terminationPacketNum = seqNum;
             case DATA:
                 // Buffer message packet
                 if(seqReg.inWindow(seqNum)) {
                     addEntry(seqNum, packet);
                     seqReg.release(seqNum);
                 }
-                // TODO send ack
-                break;
-            case FIN:
-                // Start message conclusion
-                terminationPacketNum = seqNum;
-                // TODO send ack
                 break;
             case SYN:
                 // Potentially reset message, if midway, since resync
