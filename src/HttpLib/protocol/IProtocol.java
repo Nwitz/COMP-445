@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public interface IProtocol {
 
-    public String send(HttpRequest httpRequest, int port) throws InvalidRequestException, InvalidResponseException, IOException;
+    public String send(HttpRequest httpRequest, int port) throws InvalidRequestException, IOException;
 
     public void listen(int port, IRequestCallback callback) throws IOException;
 

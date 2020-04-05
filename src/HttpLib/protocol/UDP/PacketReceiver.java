@@ -12,16 +12,13 @@ import java.util.concurrent.Future;
 class PacketReceiver {
 
     private DatagramSocket socket;
-    private PacketScheduler scheduler;
     private SelectiveRepeatRegistry seqReg;
     private final ExecutorService receptorExecutor;
     private Future<?> receptorFuture;
-    private HashMap<Integer, PseudoTCPPacket> receivedPackets = new HashMap<Integer, PseudoTCPPacket>();
     private ArrayList<IPacketReceiverListener> _listeners = new ArrayList<>();
 
-    public PacketReceiver(DatagramSocket socket, PacketScheduler scheduler, SelectiveRepeatRegistry repeatRegistry) {
+    public PacketReceiver(DatagramSocket socket, SelectiveRepeatRegistry repeatRegistry) {
         this.socket = socket;
-        this.scheduler = scheduler;
         seqReg = repeatRegistry;
         receptorExecutor = Executors.newSingleThreadExecutor();
     }
@@ -61,10 +58,6 @@ class PacketReceiver {
             receptorFuture.cancel(true);
     }
 
-    public PseudoTCPPacket flush(int i){
-        return receivedPackets.remove(i);
-    }
-
     private class PacketReceivedTask extends Thread {
         DatagramPacket datagramPacket;
         PacketReceiver parentReceiver;
@@ -78,28 +71,6 @@ class PacketReceiver {
         public void start() {
             // Make packet from data
             PseudoTCPPacket packet = new PseudoTCPPacket(datagramPacket.getData());
-            int sequenceNumber = packet.getSequenceNumber();
-
-            // Handle receiving handshaking
-            // Packet type that should not be changing the data sequence numbers
-            switch (packet.getType()) {
-                case SYN:
-                    seqReg.sync(sequenceNumber);
-                    // send SYN-ACK with packet.getSequenceNumber()
-                    // Raise flag to wait for last ACK
-                    break;
-                case SYNACK:
-                    // Forward to scheduler ?
-                    break;
-                case ACK:
-                    // Check for end of 3-way (in waiting) : Should not bubble up in that case
-                    // Raise HandshakingDone event ?
-                    // else, let go up in event
-                    break;
-                default:
-                    if (seqReg.inWindow(sequenceNumber))
-                        receivedPackets.put(sequenceNumber, packet);
-            }
 
             // Notify
             for (IPacketReceiverListener listener : _listeners)

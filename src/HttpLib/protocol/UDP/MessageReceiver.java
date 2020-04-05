@@ -1,6 +1,5 @@
 package HttpLib.protocol.UDP;
 
-import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,6 +16,10 @@ public class MessageReceiver implements IPacketReceiverListener {
         seqReg = repeatRegistry;
         seqReg.addListener(eventListener);
         message = new PseudoTCPMessage();
+    }
+
+    public PseudoTCPMessage getMessage() {
+        return message;
     }
 
     public void addListener(IMessageReceiverListener listener) {
@@ -58,16 +61,15 @@ public class MessageReceiver implements IPacketReceiverListener {
 
         int seqNum = packet.getSequenceNumber();
         switch (packet.getType()){
-            case DATA:
-                // Buffer message packet
-                if(seqReg.inWindow(seqNum))
-                    addEntry(seqNum, receiver.flush(seqNum));
-
-                // TODO: Release number + Send ACK to scheduler (Meaning we need a reference to it)
-                break;
             case FIN:
                 // Start message conclusion
                 terminationPacketNum = seqNum;
+            case DATA:
+                // Buffer message packet
+                if(seqReg.inWindow(seqNum)) {
+                    addEntry(seqNum, packet);
+                    seqReg.release(seqNum);
+                }
                 break;
             case SYN:
                 // Potentially reset message, if midway, since resync

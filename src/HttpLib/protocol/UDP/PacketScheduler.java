@@ -58,6 +58,40 @@ class PacketScheduler implements IPacketReceiverListener {
         _queuingLock.unlock();
     }
 
+    public void handshake(byte[] address, byte[] port) {
+        _queuingLock.lock();
+        int base = 45;
+        _seqNumReg.sync(base);
+
+        PseudoTCPPacket sync = new PseudoTCPPacket(
+            address,
+            port,
+            PacketType.SYN,
+            base
+        );
+        internalQueuePacket(sync);
+    }
+
+    private void sendAck(PseudoTCPPacket packet) {
+        PseudoTCPPacket ack = new PseudoTCPPacket(
+                packet.getPeerAddress(),
+                packet.getPeerPort(),
+                PacketType.ACK,
+                packet.getSequenceNumber()
+        );
+        internalQueuePacket(packet);
+    }
+
+    private void sendSynAck(PseudoTCPPacket packet) {
+        PseudoTCPPacket ack = new PseudoTCPPacket(
+                packet.getPeerAddress(),
+                packet.getPeerPort(),
+                PacketType.SYNACK,
+                packet.getSequenceNumber()
+        );
+        internalQueuePacket(packet);
+    }
+
     private void internalQueuePacket(PseudoTCPPacket packet) {
         int seqNum = -1;
 
@@ -89,8 +123,8 @@ class PacketScheduler implements IPacketReceiverListener {
     }
 
     public synchronized boolean acknowledge(int seqNum) {
+        _seqNumReg.release(seqNum);
         if (seqNum < 0 || !_runningSenders.containsKey(seqNum)) return false;
-
         // Stop runner
         _runningSenders.get(seqNum).cancel(true);
         _runningSenders.remove(seqNum);
@@ -105,8 +139,23 @@ class PacketScheduler implements IPacketReceiverListener {
     @Override
     public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
         int seqNum = packet.getSequenceNumber();
-        // Receiving ACK, releasing that number since that packet reached his destination
-        if (!isACK(packet))
-            _seqNumReg.release(seqNum);
+
+        switch (packet.getType()) {
+            case FIN:
+            case DATA:
+                sendAck(packet);
+                break;
+            case SYN:
+                _seqNumReg.sync(seqNum);
+                sendSynAck(packet);
+                break;
+            case SYNACK:
+                _queuingLock.unlock();
+                _seqNumReg.release(seqNum);
+                sendAck(packet);
+            case ACK:
+                acknowledge(seqNum);
+                break;
+        }
     }
 }

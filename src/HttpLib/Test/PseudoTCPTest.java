@@ -1,4 +1,4 @@
-package HttpLib.protocol.UDP;
+package HttpLib.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 

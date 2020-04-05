@@ -5,9 +5,13 @@ import HttpLib.Exceptions.InvalidRequestException;
 import HttpLib.protocol.IProtocol;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 
-public class PseudoTCP implements IProtocol {
+public class PseudoTCP implements IProtocol{
+    boolean sendMessageReceived = false;
 
     @Override
     public String send(HttpRequest httpRequest, int destinationPort) throws IOException {
@@ -28,10 +32,18 @@ public class PseudoTCP implements IProtocol {
         // Message receiver/constructor object
         MessageReceiver messageReceiver = new MessageReceiver(sequenceNumberRegistry);
 
+        // Create MessageListener
+        IMessageReceiverListener messageReceiverListener = new IMessageReceiverListener() {
+
+            @Override
+            public void onMessageReceived(PseudoTCPMessage receivedMessage) {
+                sendMessageReceived = true;
+            }
+        };
 
         // ===== Start a receiver thread & logic
         // Receiving logic
-        IPacketReceiverListener receiverListener = new IPacketReceiverListener() {
+        IPacketReceiverListener packetReceiverListener = new IPacketReceiverListener() {
 
             @Override
             public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
@@ -43,8 +55,10 @@ public class PseudoTCP implements IProtocol {
             }
         };
 
-        PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
-        receiver.addListener(receiverListener);
+        messageReceiver.addListener(messageReceiverListener);
+
+        PacketReceiver receiver = new PacketReceiver(socket, sequenceNumberRegistry);
+        receiver.addListener(packetReceiverListener);
         receiver.addListener(messageReceiver);      // EX: Listens for DATA etc..
         receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
 
@@ -52,15 +66,27 @@ public class PseudoTCP implements IProtocol {
         receiver.startReceiving();
 
         // =====
+        // Perform Handshake
+        scheduler.handshake(requestPacketMessage.getPeerAddressBytes(), requestPacketMessage.getPeerPortBytes());
         // Schedule the message's packets to be sent
         scheduler.queuePackets(requestPacketMessage.getPackets());
 
-        // TODO: Have a messageReceiverListener to receive to Response when ready, and return it as HTTPResponse.
-        // TODO: Return reconstructed HTTPResponse( string )
+        while (!sendMessageReceived) {
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+        }
 
+        // Message filled, convert its packets to single payload and read
+        PseudoTCPMessage message = messageReceiver.getMessage();
+        message.buildPayloadFromPackets();
+        byte[] payload = message.getPayload();
 
         // TODO: Close connection
-        return null;
+        return new String(payload, StandardCharsets.UTF_8);
     }
 
     @Override
@@ -119,7 +145,7 @@ public class PseudoTCP implements IProtocol {
         messageReceiver.addListener(messageListener);
 
         // Start receiver thread
-        PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
+        PacketReceiver receiver = new PacketReceiver(socket, sequenceNumberRegistry);
         receiver.addListener(messageReceiver);
         receiver.addListener(scheduler);
 
@@ -134,6 +160,7 @@ public class PseudoTCP implements IProtocol {
             }
         }
     }
+
 
 
 }
