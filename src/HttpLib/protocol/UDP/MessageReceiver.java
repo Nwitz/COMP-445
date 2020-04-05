@@ -7,6 +7,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 
 public class MessageReceiver {
+
     private SelectiveRepeatRegistry seqReg;
     private HashMap<Integer, PseudoTCPPacket> receivedPackets = new HashMap<Integer, PseudoTCPPacket>();
     private PseudoTCPMessage message;

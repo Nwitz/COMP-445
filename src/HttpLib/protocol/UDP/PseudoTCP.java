@@ -5,13 +5,10 @@ import HttpLib.HttpRequest;
 import HttpLib.IRequestCallback;
 import HttpLib.protocol.IProtocol;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.nio.channels.MembershipKey;
-import java.util.Set;
 
 public class PseudoTCP implements IProtocol {
 
@@ -31,14 +28,16 @@ public class PseudoTCP implements IProtocol {
                 destinationPort,
                 httpRequest.toString().getBytes());
 
-        // TODO: (Handshaking) Establish reliable connection with peer
+        // TODO: Create message constructor obj
 
-        // TODO: Start a receiver thread of some sort to receive the ACK. (In Scheduler)
+
+        // Start a receiver thread & logic
+        PacketReceiver receiver = new PacketReceiver(socket, scheduler, sequenceNumberRegistry);
+        receiver.startReceiving();
+        // TODO: add eventlistener
 
         // Schedule the message's packets to be sent
         scheduler.queuePackets(requestPacketMessage.getPackets(), sequenceNumberRegistry);
-
-        // TODO: Once message sent entirely, listen for response message
 
         // TODO: Close connection
 
