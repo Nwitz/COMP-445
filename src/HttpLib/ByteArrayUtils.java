@@ -4,20 +4,20 @@ import java.nio.ByteBuffer;
 
 public class ByteArrayUtils {
 
-    public static synchronized byte[] shortToBytes(short from){
+    public static byte[] shortToBytes(short from){
         return ByteBuffer.allocate(2).putShort(from).array();
     }
 
-    public static synchronized byte[] intToBytes(int from) {
+    public static byte[] intToBytes(int from) {
         return ByteBuffer.allocate(4).putInt(from).array();
     }
 
-    public static synchronized int bytesToInt(byte[] from) {
+    public static int bytesToInt(byte[] from) {
         ByteBuffer buffer = ByteBuffer.wrap(from);
         return buffer.getInt();
     }
 
-    public static synchronized byte[] stringIPToBytes(String ip) {
+    public static byte[] stringIPToBytes(String ip) {
         String[] parts = ip.split("\\.");
         byte[] bytes = new byte[4];
         for (int i = 0; i<4; i++) {
@@ -26,7 +26,7 @@ public class ByteArrayUtils {
         return bytes;
     }
 
-    public static synchronized String bytesToStringIP(byte[] from) {
+    public static String bytesToStringIP(byte[] from) {
         int[] ints = new int[4];
         for (int i = 0; i < 4; i++) {
             ints[i] = bytesToInt(padByteToInteger(from[i]));
@@ -38,23 +38,23 @@ public class ByteArrayUtils {
                 "." + ints[3];
     }
 
-    public static synchronized int bytesToFakeShort(byte[] from) {
+    public static int bytesToFakeShort(byte[] from) {
         byte[] b = pad2ByteToInteger(from);
         return bytesToInt(b);
     }
 
-    public static synchronized byte[] fakeShortToBytes(int from) {
+    public static byte[] fakeShortToBytes(int from) {
         byte[] bytesFull = intToBytes(from);
         return new byte[]{bytesFull[2], bytesFull[3]};
     }
 
-    private static synchronized byte[] padByteToInteger(byte b){
+    private static byte[] padByteToInteger(byte b){
         byte[] bytes = new byte[4];
         bytes[3] = b;
         return bytes;
     }
 
-    private static synchronized byte[] pad2ByteToInteger(byte[] from) {
+    private static byte[] pad2ByteToInteger(byte[] from) {
         byte[] bytes = new byte[4];
         bytes[2] = from[0];
         bytes[3] = from[1];
