@@ -34,18 +34,22 @@ public class MessageReceiver implements IPacketReceiverListener {
         @Override
         public void onWindowShift(int previousBase, int newBase) {
             int i = previousBase;
+            PseudoTCPPacket packet;
             while (i != newBase){
-                message.addPacket(receivedPackets.get(i));
-                i = seqReg.unsignedWrap(i + 1);
+                packet = receivedPackets.get(i);
+                if (packet != null) {
+                    message.addPacket(receivedPackets.get(i));
 
-                // Message is entirely received
-                if (newBase == terminationPacketNum){
-                    isActive = false;
+                    // Message is entirely received
+                    if (packet.getType() == PacketType.FIN) {
+                        isActive = false;
 
-                    // Notify that message reception is complete
-                    for (IMessageReceiverListener listener : _listeners)
-                        listener.onMessageReceived(message);
+                        // Notify that message reception is complete
+                        for (IMessageReceiverListener listener : _listeners)
+                            listener.onMessageReceived(message);
+                    }
                 }
+                i = seqReg.unsignedWrap(i + 1);
             }
         }
 
@@ -63,11 +67,12 @@ public class MessageReceiver implements IPacketReceiverListener {
         switch (packet.getType()){
             case FIN:
                 // Start message conclusion
-                terminationPacketNum = seqNum;
+                terminationPacketNum = seqNum + 1;
             case DATA:
                 // Buffer message packet
                 if(seqReg.inWindow(seqNum))
                     addEntry(seqNum, packet);
+                seqReg.release(seqNum);
 
                 break;
             case SYN:

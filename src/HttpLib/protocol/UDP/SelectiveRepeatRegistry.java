@@ -94,18 +94,20 @@ class SelectiveRepeatRegistry {
             int initialBase = _base;
             if (!inWindow(i)) return false;
 
-            if (_seq.get(i) != SlotState.Requested)
-                return false;
+//            if (_seq.get(i) != SlotState.Requested)
+//                return false;
 
             // Mark for cleaning
             _seq.put(i, SlotState.Released);
 
             // Clearing trail for next cycle
+            SlotState baseState = _seq.get(_base);
             if (i == _base) {
                 // Finding new base
-                while (_base != _next && _seq.get(_base) == SlotState.Released) {
+                while (_seq.get(_base) == SlotState.Released) {
                     _seq.remove(_base);
                     _base = unsignedWrap(_base + 1);
+//                    baseState = _seq.get(_base);
                 }
 
                 notify = true;

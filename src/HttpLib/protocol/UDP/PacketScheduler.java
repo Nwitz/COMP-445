@@ -14,7 +14,7 @@ import java.util.concurrent.Semaphore;
 class PacketScheduler implements IPacketReceiverListener {
     // Will hold all PacketSender and demultiplex ACK seq# received to manage them
 
-    private final long TIMEOUT_DELAY_MS = 2;
+    private final long TIMEOUT_DELAY_MS = 100000;
 
     private final SelectiveRepeatRegistry _seqNumReg;
     private final DatagramSocket _socket;
@@ -161,7 +161,6 @@ class PacketScheduler implements IPacketReceiverListener {
                 receiveAcknowledge(seqNum);
             case DATA:
             case FIN:
-                _seqNumReg.release(seqNum);
                 sendAck(packet);
                 break;
             case ACK:
