@@ -127,8 +127,12 @@ class PacketScheduler implements IPacketReceiverListener {
         PacketSender sender = new PacketSender(_socket, packet, address, port, timeout);
         Future<?> senderTask = _pool.submit(sender);
 
-        if (!isACK(packet))
+        if (!isACK(packet)){
+            if(_runningSenders.containsKey(seqNum))
+                _runningSenders.get(seqNum).cancel(true);
+
             _runningSenders.put(seqNum, senderTask);
+        }
     }
 
     public synchronized boolean receiveAcknowledge(int seqNum) {
