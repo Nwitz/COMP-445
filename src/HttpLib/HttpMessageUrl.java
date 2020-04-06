@@ -39,4 +39,8 @@ public class HttpMessageUrl {
     public String getHost() {
         return _url.getHost();
     }
+
+    public int getPort() {
+        return _url.getPort();
+    }
 }
