@@ -78,7 +78,8 @@ public class PseudoTCP implements IProtocol{
     @Override
     public void listen(int port, IRequestCallback callback) throws IOException {
         SelectiveRepeatRegistry sequenceNumberRegistry = new SelectiveRepeatRegistry();
-
+        port = 9797;
+        System.out.println("listening on port " + port);
         // Open Socket
         InetSocketAddress bindAddress = new InetSocketAddress("127.0.0.1", port);
         DatagramSocket socket = new DatagramSocket(bindAddress);
