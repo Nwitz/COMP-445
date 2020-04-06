@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
 class PacketScheduler implements IPacketReceiverListener {
@@ -20,7 +21,7 @@ class PacketScheduler implements IPacketReceiverListener {
     private final DatagramSocket _socket;
     private final ExecutorService _pool;
     private final ExecutorService _queuer;
-    private ReentrantLock _queuingLock = new ReentrantLock();
+    private Semaphore _queuingLock = new Semaphore(1);
     private HashMap<Integer, Future<?>> _runningSenders = new HashMap<>();
 
     public PacketScheduler(DatagramSocket socket, SelectiveRepeatRegistry seqNumReg) {
@@ -33,6 +34,15 @@ class PacketScheduler implements IPacketReceiverListener {
         _queuer = Executors.newSingleThreadExecutor();
     }
 
+    private void lock(){
+        try {
+            _queuingLock.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+    }
+
     /**
      * Schedule multiple packets to be sent in order.
      * Non-Blocking
@@ -41,25 +51,25 @@ class PacketScheduler implements IPacketReceiverListener {
      */
     public void queuePackets(PseudoTCPPacket[] packets) {
         Runnable sequentialSendProcedure = () -> {
-            _queuingLock.lock();
+            lock();
             // Queue all packets to be sent
             for (int i = 0; i < packets.length; i++)
                 internalQueuePacket(packets[i]);
 
-            _queuingLock.unlock();
+            _queuingLock.release();
         };
 
         _queuer.submit(sequentialSendProcedure);
     }
 
     public void queuePacket(PseudoTCPPacket packet) {
-        _queuingLock.lock();
+        lock();
         internalQueuePacket(packet);
-        _queuingLock.unlock();
+        _queuingLock.release();
     }
 
     public void handshake(byte[] address, byte[] port) {
-        _queuingLock.lock();
+        lock();
         int base = 45;
         _seqNumReg.sync(base);
 
@@ -122,10 +132,12 @@ class PacketScheduler implements IPacketReceiverListener {
             _runningSenders.put(seqNum, senderTask);
     }
 
-    public synchronized boolean acknowledge(int seqNum) {
+    public synchronized boolean receiveAcknowledge(int seqNum) {
         _seqNumReg.release(seqNum);
+
         if (seqNum < 0 || !_runningSenders.containsKey(seqNum)) return false;
-        // Stop runner
+
+        // Stop runner for that sequence number
         _runningSenders.get(seqNum).cancel(true);
         _runningSenders.remove(seqNum);
 
@@ -141,20 +153,19 @@ class PacketScheduler implements IPacketReceiverListener {
         int seqNum = packet.getSequenceNumber();
 
         switch (packet.getType()) {
-            case FIN:
-            case DATA:
-                sendAck(packet);
-                break;
             case SYN:
                 _seqNumReg.sync(seqNum);
                 sendSynAck(packet);
                 break;
             case SYNACK:
-                _queuingLock.unlock();
+                _queuingLock.release();
+            case DATA:
+            case FIN:
                 _seqNumReg.release(seqNum);
                 sendAck(packet);
+                break;
             case ACK:
-                acknowledge(seqNum);
+                receiveAcknowledge(seqNum);
                 break;
         }
     }

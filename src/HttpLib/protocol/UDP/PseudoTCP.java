@@ -69,7 +69,7 @@ public class PseudoTCP implements IProtocol{
         // Perform Handshake
         scheduler.handshake(requestPacketMessage.getPeerAddressBytes(), requestPacketMessage.getPeerPortBytes());
         // Schedule the message's packets to be sent
-        scheduler.queuePackets(requestPacketMessage.getPackets());
+        // scheduler.queuePackets(requestPacketMessage.getPackets());
 
         while (!sendMessageReceived) {
             try {
