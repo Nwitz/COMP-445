@@ -43,22 +43,9 @@ public class PseudoTCP implements IProtocol{
 
         // ===== Start a receiver thread & logic
         // Receiving logic
-        IPacketReceiverListener packetReceiverListener = new IPacketReceiverListener() {
-
-            @Override
-            public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
-                switch (packet.getType()){
-                    case TER:
-                        // TODO: Close connection ... who handles it ?
-                        break;
-                }
-            }
-        };
-
         messageReceiver.addListener(messageReceiverListener);
 
         PacketReceiver receiver = new PacketReceiver(socket, sequenceNumberRegistry);
-        receiver.addListener(packetReceiverListener);
         receiver.addListener(messageReceiver);      // EX: Listens for DATA etc..
         receiver.addListener(scheduler);            // EX: Scheduler listens for ACK
 
@@ -85,7 +72,6 @@ public class PseudoTCP implements IProtocol{
         message.buildPayloadFromPackets();
         byte[] payload = message.getPayload();
 
-        // TODO: Close connection
         return new String(payload, StandardCharsets.UTF_8);
     }
 
@@ -112,6 +98,8 @@ public class PseudoTCP implements IProtocol{
 
                 HttpRequest request = null;
                 HttpResponse response = null;
+
+                scheduler.handshake(message.getPeerAddressBytes(), message.getPeerPortBytes());
 
                 try {
                     request = new HttpRequest(rawRequest);
