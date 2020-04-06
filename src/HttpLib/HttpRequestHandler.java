@@ -36,7 +36,11 @@ public class HttpRequestHandler {
         if (!request.isValid())
             throw new InvalidRequestException();
 
-        String res = protocol.send(request, PORT);
+        int port = request.getUrl().getPort();
+        if (port < 0) {
+            port = PORT;
+        }
+        String res = protocol.send(request, port);
 
         HttpResponse response = new HttpResponse(res);
         // Recurse for redirection, max 5 times
