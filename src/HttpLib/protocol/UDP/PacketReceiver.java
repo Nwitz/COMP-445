@@ -72,6 +72,8 @@ class PacketReceiver {
             // Make packet from data
             PseudoTCPPacket packet = new PseudoTCPPacket(datagramPacket.getData());
 
+            System.out.println("Received packet type: "+ packet.getType());
+
             // Notify
             for (IPacketReceiverListener listener : _listeners)
                 listener.onPacketReceived(packet, parentReceiver);

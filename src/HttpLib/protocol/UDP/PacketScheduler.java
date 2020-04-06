@@ -10,7 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 class PacketScheduler implements IPacketReceiverListener {
     // Will hold all PacketSender and demultiplex ACK seq# received to manage them
@@ -115,7 +114,7 @@ class PacketScheduler implements IPacketReceiverListener {
             packet.setSequenceNumber(seqNum);
         }
 
-        int timeout = (isACK(packet) ? (int) TIMEOUT_DELAY_MS : -1);
+        int timeout = (!isACK(packet) ? (int) TIMEOUT_DELAY_MS : -1);
         InetAddress address = null;
         try {
             address = InetAddress.getByAddress(packet.getPeerAddress());

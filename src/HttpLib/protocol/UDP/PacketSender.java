@@ -53,7 +53,8 @@ class PacketSender implements Runnable {
                 try {
                     Thread.sleep(_timeout);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    // e.printStackTrace();
+                    // Nothing
                 }
             }
         }
