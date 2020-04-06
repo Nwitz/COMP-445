@@ -19,7 +19,7 @@ import java.nio.file.Paths;
         version = "1.0")
 public class Httpfs implements Runnable {
     private int _port = 8080;
-    // TODO: remove
+
     private FileManager fileManager;
     private IProtocol protocol;
 

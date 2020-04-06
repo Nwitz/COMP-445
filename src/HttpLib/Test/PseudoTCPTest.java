@@ -48,7 +48,11 @@ class PseudoTCPTest {
         Thread t = new Thread(listenTask);
         t.start();
 
-        protocol.send(req, 9797);
+        String responseStr = protocol.send(req, 9797);
+
+        System.out.println("=====");
+        System.out.println("Received response:");
+        System.out.println(responseStr);
 
         t.join();
     }
