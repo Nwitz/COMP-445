@@ -99,8 +99,6 @@ public class PseudoTCP implements IProtocol{
                 HttpRequest request = null;
                 HttpResponse response = null;
 
-                scheduler.handshake(message.getPeerAddressBytes(), message.getPeerPortBytes());
-
                 try {
                     request = new HttpRequest(rawRequest);
                 } catch (InvalidRequestException e) {

@@ -94,9 +94,6 @@ class SelectiveRepeatRegistry {
             int initialBase = _base;
             if (!inWindow(i)) return false;
 
-//            if (_seq.get(i) != SlotState.Requested)
-//                return false;
-
             // Mark for cleaning
             _seq.put(i, SlotState.Released);
 
@@ -106,9 +103,14 @@ class SelectiveRepeatRegistry {
                 // Finding new base
                 while (_seq.get(_base) == SlotState.Released) {
                     _seq.remove(_base);
+
+                    // Make sure that we don't over pass the _next value
+                    if(_base==_next)
+                        _next = unsignedWrap(_next + 1);
+
                     _base = unsignedWrap(_base + 1);
-//                    baseState = _seq.get(_base);
                 }
+
 
                 notify = true;
             }
