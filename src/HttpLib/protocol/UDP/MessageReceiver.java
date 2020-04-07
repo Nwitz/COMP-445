@@ -58,6 +58,13 @@ public class MessageReceiver implements IPacketReceiverListener {
         }
     };
 
+    public void reset(){
+        isActive = true;
+        terminationPacketNum = -1;
+        receivedPackets = new HashMap<>();
+        message = new PseudoTCPMessage();
+    }
+
     @Override
     public void onPacketReceived(PseudoTCPPacket packet, PacketReceiver receiver) {
         // Listen for reception only until the message is complete

@@ -45,6 +45,7 @@ public class Httpfs implements Runnable {
                     String.format("The port has to be in a valid, non-reserved range [1024,65535].")
             );
         }
+        _port = port;
     }
 
     @Option(names = {"-u", "--udp"},
